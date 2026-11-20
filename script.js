@@ -125,15 +125,62 @@ async function sendTutorTurn(displayText,kind){
 document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefault();const q=chatInput.value.trim();if(!q||lessonBusy)return;chatInput.value="";sendTutorTurn(q,lessonActive?"question":"start");});
 document.getElementById("nextLessonStep").addEventListener("click",()=>sendTutorTurn("Teruskan ke satu langkah pembelajaran yang seterusnya.","next"));
 document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{chatInput.value=b.dataset.prompt;chatInput.focus();}));
-document.getElementById("voiceButton").addEventListener("click",()=>{if(!("speechSynthesis"in window)){alert("Fungsi suara tidak disokong oleh pelayar ini.");return;}const last=chatMessages.querySelector(".assistant-message:last-child .message-bubble");if(!last)return;const utterance=new SpeechSynthesisUtterance(last.textContent);utterance.lang="ms-MY";speechSynthesis.cancel();speechSynthesis.speak(utterance);});
+const voiceButton=document.getElementById("voiceButton"),voiceInputButton=document.getElementById("voiceInputButton");
+voiceButton.addEventListener("click",()=>{
+ if(!("speechSynthesis" in window)){alert("Fungsi bacaan suara tidak disokong oleh pelayar ini.");return;}
+ const last=chatMessages.querySelector(".assistant-message:last-child .message-bubble");if(!last)return;
+ speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(last.textContent);
+ utterance.lang=/[\\u0E00-\\u0E7F]/.test(last.textContent)?"th-TH":(document.getElementById("languageToggle").textContent.trim().startsWith("EN")?"en-US":"ms-MY");
+ const voices=speechSynthesis.getVoices();const preferred=voices.find(v=>v.lang.toLowerCase().startsWith(utterance.lang.slice(0,2)));
+ if(preferred)utterance.voice=preferred;
+ voiceButton.classList.add("speaking");utterance.onend=utterance.onerror=()=>voiceButton.classList.remove("speaking");speechSynthesis.speak(utterance);
+});
+let speechRecognition=null,isListening=false;
+const SpeechRecognitionAPI=window.SpeechRecognition||window.webkitSpeechRecognition;
+function setListening(active,message){
+ isListening=active;voiceInputButton.classList.toggle("listening",active);
+ voiceInputButton.setAttribute("aria-pressed",String(active));
+ voiceInputButton.title=active?"Hentikan rakaman suara":"Cakap untuk menaip soalan";
+ const hint=document.getElementById("voiceStatus");if(hint)hint.textContent=message|| (active?"Sedang mendengar…":"MS / EN · Cloud AI");
+}
+if(SpeechRecognitionAPI){
+ speechRecognition=new SpeechRecognitionAPI();speechRecognition.continuous=false;speechRecognition.interimResults=true;
+ speechRecognition.lang="ms-MY";
+ let finalTranscript="";
+ speechRecognition.onstart=()=>{finalTranscript="";setListening(true,"Sedang mendengar…");};
+ speechRecognition.onresult=event=>{
+  let interim="";
+  for(let i=event.resultIndex;i<event.results.length;i++){const transcript=event.results[i][0].transcript;if(event.results[i].isFinal)finalTranscript+=transcript;else interim+=transcript;}
+  chatInput.value=[chatInput.value.trim(),finalTranscript,interim].filter(Boolean).join(" ").trim();
+ };
+ speechRecognition.onerror=event=>{setListening(false,event.error==="not-allowed"?"Akses mikrofon ditolak. Benarkan mikrofon dalam tetapan pelayar.":"Suara tidak dapat dikenal pasti. Cuba sekali lagi.");};
+ speechRecognition.onend=()=>setListening(false,chatInput.value.trim()?"Suara berjaya ditukar kepada teks.":"MS / EN · Cloud AI");
+ voiceInputButton.addEventListener("click",()=>{
+  if(isListening){speechRecognition.stop();return;}
+  try{speechRecognition.lang=document.getElementById("languageToggle").textContent.trim().startsWith("EN")?"en-US":"ms-MY";speechRecognition.start();}
+  catch(error){setListening(false,"Mikrofon sedang digunakan. Cuba sebentar lagi.");}
+ });
+}else{
+ voiceInputButton.disabled=true;voiceInputButton.title="Pengecaman suara tidak disokong dalam pelayar ini";
+ voiceInputButton.addEventListener("click",()=>alert("Pelayar ini tidak menyokong input suara. Cuba Chrome atau pelayar yang menyokong Speech Recognition."));
+}
 const canvas=document.getElementById("whiteboard"),ctx=canvas.getContext("2d");let drawing=false,tool="pen",lastPoint=null;
-function resizeCanvas(){const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;const old=document.createElement("canvas");old.width=canvas.width;old.height=canvas.height;old.getContext("2d").drawImage(canvas,0,0);const dpr=window.devicePixelRatio||1;canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width&&old.height)ctx.drawImage(old,0,0,old.width,old.height,0,0,rect.width,rect.height);ctx.lineCap="round";ctx.lineJoin="round";}
+let boardHistory=[],boardFuture=[];
+function rememberBoard(){try{boardHistory.push(ctx.getImageData(0,0,canvas.width,canvas.height));if(boardHistory.length>35)boardHistory.shift();boardFuture=[];updateBoardHistoryButtons();}catch(error){}}
+function updateBoardHistoryButtons(){const undo=document.getElementById("undoBoard"),redo=document.getElementById("redoBoard");if(undo)undo.disabled=boardHistory.length<2;if(redo)redo.disabled=boardFuture.length===0;}
+function restoreBoard(imageData){ctx.clearRect(0,0,canvas.width,canvas.height);if(imageData)ctx.putImageData(imageData,0,0);updateBoardHistoryButtons();}
+function resizeCanvas(){const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;const old=document.createElement("canvas");old.width=canvas.width;old.height=canvas.height;old.getContext("2d").drawImage(canvas,0,0);const dpr=window.devicePixelRatio||1;canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width&&old.height)ctx.drawImage(old,0,0,old.width,old.height,0,0,rect.width,rect.height);ctx.lineCap="round";ctx.lineJoin="round";boardHistory=[];boardFuture=[];rememberBoard();}
 window.addEventListener("resize",()=>{if(document.getElementById("boardView").classList.contains("active"))resizeCanvas();});
 document.querySelectorAll(".tool").forEach(b=>b.addEventListener("click",()=>{tool=b.dataset.tool;document.querySelectorAll(".tool").forEach(x=>x.classList.toggle("active",x===b));}));
 function point(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
-canvas.addEventListener("pointerdown",e=>{drawing=true;lastPoint=point(e);canvas.setPointerCapture(e.pointerId);});
-canvas.addEventListener("pointermove",e=>{if(!drawing)return;const p=point(e);ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(p.x,p.y);ctx.strokeStyle=tool==="eraser"?"#101a2e":document.getElementById("penColor").value;ctx.lineWidth=tool==="eraser"?24:Number(document.getElementById("penSize").value);ctx.stroke();lastPoint=p;});
-function stopDraw(){drawing=false;lastPoint=null;}canvas.addEventListener("pointerup",stopDraw);canvas.addEventListener("pointercancel",stopDraw);document.getElementById("clearBoard").addEventListener("click",()=>ctx.clearRect(0,0,canvas.width,canvas.height));
+canvas.addEventListener("pointerdown",e=>{drawing=true;lastPoint=point(e);canvas.setPointerCapture(e.pointerId);ctx.beginPath();ctx.arc(lastPoint.x,lastPoint.y,(tool==="eraser"?24:Number(document.getElementById("penSize").value))/2,0,Math.PI*2);ctx.fillStyle=tool==="eraser"?"#101a2e":document.getElementById("penColor").value;ctx.fill();});
+canvas.addEventListener("pointermove",e=>{if(!drawing)return;const p=point(e),mid={x:(lastPoint.x+p.x)/2,y:(lastPoint.y+p.y)/2};ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.quadraticCurveTo(lastPoint.x,lastPoint.y,mid.x,mid.y);ctx.strokeStyle=tool==="eraser"?"#101a2e":document.getElementById("penColor").value;ctx.lineWidth=tool==="eraser"?24:Number(document.getElementById("penSize").value);ctx.stroke();lastPoint=p;});
+function stopDraw(){if(!drawing)return;drawing=false;lastPoint=null;rememberBoard();}
+canvas.addEventListener("pointerup",stopDraw);canvas.addEventListener("pointercancel",stopDraw);
+document.getElementById("clearBoard").addEventListener("click",()=>{rememberBoard();ctx.clearRect(0,0,canvas.width,canvas.height);rememberBoard();});
+document.getElementById("undoBoard").addEventListener("click",()=>{if(boardHistory.length<2)return;boardFuture.push(boardHistory.pop());restoreBoard(boardHistory[boardHistory.length-1]);});
+document.getElementById("redoBoard").addEventListener("click",()=>{if(!boardFuture.length)return;const next=boardFuture.pop();boardHistory.push(next);restoreBoard(next);});
+document.getElementById("exportBoard").addEventListener("click",()=>{const link=document.createElement("a");link.download="eduboard-whiteboard.png";link.href=canvas.toDataURL("image/png");link.click();});
 const fileInput=document.getElementById("questionFile");fileInput.addEventListener("change",()=>{const file=fileInput.files&&fileInput.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{document.getElementById("previewImage").src=reader.result;document.getElementById("scanPreview").hidden=false;};reader.readAsDataURL(file);});
 document.getElementById("askAboutImage").addEventListener("click",()=>{showView("tutor");chatInput.value="Saya telah memuat naik gambar soalan. Bantu saya fahami soalan ini (analisis imej AI belum diaktifkan).";chatInput.focus();});
 const noteTitle=document.getElementById("noteTitle"),noteContent=document.getElementById("noteContent"),editor=document.getElementById("noteEditor"),notesList=document.getElementById("notesList");let notes=[];try{notes=JSON.parse(localStorage.getItem("eduboard-notes")||"[]");}catch(e){notes=[];}
