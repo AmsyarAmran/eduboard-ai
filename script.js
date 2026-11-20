@@ -355,7 +355,7 @@ function renderQuizQuestion(){
 }
 function startQuiz(){quizIndex=0;quizAnswers=Array(quizQuestions.length).fill(undefined);quizChecked=false;quizResults.hidden=true;quizEmpty.hidden=true;quizStage.hidden=!quizQuestions.length;if(quizQuestions.length)renderQuizQuestion();document.getElementById("quizCount").textContent=quizQuestions.length+" soalan";}
 function finishQuiz(){
- quizStage.hidden=true;quizResults.hidden=false;const correct=quizAnswers.filter((answer,i)=>answer===quizQuestions[i].correctIndex).length,incorrect=quizQuestions.length-correct,percent=Math.round(correct/quizQuestions.length*100);
+ quizStage.hidden=true;quizResults.hidden=false;const correct=quizAnswers.filter((answer,i)=>answer===quizQuestions[i].correctIndex).length,incorrect=quizQuestions.length-correct,percent=Math.round(correct/quizQuestions.length*100);try{const history=JSON.parse(localStorage.getItem("eduboard-quiz-history")||"[]");const safeHistory=Array.isArray(history)?history:[];safeHistory.push({topic:quizTopicName||"Kuiz",correct,total:quizQuestions.length,percent,date:new Date().toISOString()});localStorage.setItem("eduboard-quiz-history",JSON.stringify(safeHistory.slice(-200)));}catch(error){console.warn("Rekod analitik tidak dapat disimpan.",error);}
  document.getElementById("quizScore").textContent=correct+" / "+quizQuestions.length;
  document.getElementById("quizCorrect").textContent=correct;document.getElementById("quizIncorrect").textContent=incorrect;document.getElementById("quizPercentage").textContent=percent+"%";
  document.getElementById("quizResultTitle").textContent=percent>=80?"Cemerlang!":percent>=50?"Teruskan usaha!":"Masa untuk ulang kaji";
@@ -380,3 +380,40 @@ quizForm.addEventListener("submit",async event=>{
  finally{button.disabled=false;}
 });
 if(quizQuestions.length)startQuiz();else document.getElementById("quizCount").textContent="Belum ada kuiz";
+
+/* Fasa 11 — AI Learning Analytics */
+const analyticsNotes=document.getElementById("analyticsNotes");
+const analyticsSessions=document.getElementById("analyticsSessions");
+const analyticsSessionRate=document.getElementById("analyticsSessionRate");
+const analyticsQuizzes=document.getElementById("analyticsQuizzes");
+const analyticsAverage=document.getElementById("analyticsAverage");
+function readAnalyticsHistory(){try{const data=JSON.parse(localStorage.getItem("eduboard-quiz-history")||"[]");return Array.isArray(data)?data.filter(item=>item&&typeof item.topic==="string"&&Number.isFinite(Number(item.percent))&&item.date):[];}catch(error){return[];}}
+function localDayKey(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
+function renderAnalyticsBars(target,items,emptyText){
+ target.replaceChildren();if(!items.length){const empty=document.createElement("p");empty.className="analytics-empty";empty.textContent=emptyText;target.appendChild(empty);return;}
+ items.forEach(item=>{const wrap=document.createElement("div");wrap.className="analytics-bar-item";const label=document.createElement("span");label.textContent=item.label;const track=document.createElement("div");track.className="analytics-bar-track";const fill=document.createElement("i");fill.style.width=Math.max(0,Math.min(100,item.value))+"%";track.appendChild(fill);const value=document.createElement("strong");value.textContent=item.count===0?"—":Math.round(item.value)+"%";wrap.append(label,track,value);target.appendChild(wrap);});
+}
+function renderAnalytics(){
+ const history=readAnalyticsHistory(),sessions=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-study-sessions")||"[]");return Array.isArray(value)?value:[];}catch(error){return[];}})(),notes=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-notes")||"[]");return Array.isArray(value)?value:[];}catch(error){return[];}})();
+ const completed=sessions.filter(item=>item&&item.done).length,sessionRate=sessions.length?Math.round(completed/sessions.length*100):0;
+ analyticsNotes.textContent=String(notes.length);analyticsSessions.textContent=String(completed);analyticsSessionRate.textContent=sessionRate+"% kadar selesai";analyticsQuizzes.textContent=String(history.length);
+ analyticsAverage.textContent=history.length?Math.round(history.reduce((sum,item)=>sum+Number(item.percent),0)/history.length)+"%":"—";
+ const now=new Date(),week=[];
+ for(let offset=6;offset>=0;offset--){const day=new Date(now);day.setHours(0,0,0,0);day.setDate(day.getDate()-offset);const key=localDayKey(day),matches=history.filter(item=>localDayKey(new Date(item.date))===key);week.push({label:new Intl.DateTimeFormat("ms-MY",{weekday:"short"}).format(day),value:matches.length?matches.reduce((sum,item)=>sum+Number(item.percent),0)/matches.length:0,count:matches.length});}
+ renderAnalyticsBars(document.getElementById("analyticsWeekly"),week,"Lengkapkan kuiz untuk melihat prestasi mingguan.");
+ const months=[];for(let offset=5;offset>=0;offset--){const month=new Date(now.getFullYear(),now.getMonth()-offset,1);const matches=history.filter(item=>{const date=new Date(item.date);return date.getFullYear()===month.getFullYear()&&date.getMonth()===month.getMonth();});months.push({label:new Intl.DateTimeFormat("ms-MY",{month:"short"}).format(month),value:matches.length?matches.reduce((sum,item)=>sum+Number(item.percent),0)/matches.length:0,count:matches.length});}
+ renderAnalyticsBars(document.getElementById("analyticsMonthly"),months,"Rekod enam bulan akan dipaparkan di sini.");
+ const grouped=new Map();history.forEach(item=>{const key=item.topic.trim()||"Topik lain";const group=grouped.get(key)||{sum:0,count:0};group.sum+=Number(item.percent);group.count++;grouped.set(key,group);});
+ const subjects=[...grouped.entries()].map(([label,data])=>({label,value:data.sum/data.count,count:data.count})).sort((a,b)=>a.value-b.value);
+ renderAnalyticsBars(document.getElementById("analyticsSubjects"),subjects,"Belum ada keputusan kuiz untuk dianalisis.");
+ const recommendations=document.getElementById("analyticsRecommendations");recommendations.replaceChildren();
+ const low=subjects.filter(item=>item.value<70).slice(0,4);
+ const suggestions=[];
+ low.forEach(item=>suggestions.push({title:item.label,detail:"Purata "+Math.round(item.value)+"%. Cuba ulang kaji nota dan jawab kuiz sekali lagi."}));
+ if(sessions.length&&completed<sessions.length)suggestions.push({title:"Jadual pembelajaran",detail:(sessions.length-completed)+" sesi masih belum ditandakan selesai."});
+ if(!suggestions.length&&history.length)suggestions.push({title:"Teruskan momentum",detail:"Prestasi topik anda memuaskan. Cuba topik baharu atau kekalkan jadual ulang kaji."});
+ if(!suggestions.length)suggestions.push({title:"Mulakan langkah pertama",detail:"Jana nota, susun sesi belajar dan lengkapkan kuiz untuk mendapatkan cadangan pembelajaran."});
+ suggestions.forEach(item=>{const card=document.createElement("div");card.className="analytics-recommendation";const title=document.createElement("strong");title.textContent=item.title;const detail=document.createElement("p");detail.textContent=item.detail;card.append(title,detail);recommendations.appendChild(card);});
+}
+document.getElementById("refreshAnalytics").addEventListener("click",renderAnalytics);
+renderAnalytics();
