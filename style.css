@@ -90,3 +90,21 @@
 .lesson-canvas.presentation-mode .lesson-canvas-foot{width:100%;max-width:1000px;margin:20px auto 0}
 @media(max-width:600px){.lesson-canvas.presentation-mode{inset:6px;height:calc(100dvh - 12px);padding:18px}.presentation-mode-button{font-size:8px;padding:0 6px}}
 @media(prefers-reduced-motion:reduce){.visual-play-button{transition:none}}
+
+/* Fasa 7 — AI Smart Notes */
+.notes-header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-note-button{border:1px solid rgba(103,217,232,.4);border-radius:9px;padding:10px 13px;background:rgba(103,217,232,.1);color:#a9f0f5;font:650 10px var(--font);cursor:pointer}
+.ai-note-button:hover{background:rgba(103,217,232,.17);border-color:#67d9e8}
+.ai-note-form{margin:16px 0;padding:17px;border:1px solid rgba(103,217,232,.22);border-radius:12px;background:rgba(12,26,43,.8)}
+.ai-note-form[hidden]{display:none}
+.ai-note-form label{display:block;margin-bottom:8px;color:#dce7fb;font-size:11px;font-weight:700}
+.ai-note-form input{width:100%;padding:12px;border:1px solid rgba(145,163,205,.24);border-radius:9px;background:#0a1325;color:#f4f6ff;font:12px var(--font);outline:none}
+.ai-note-form input:focus{border-color:#67d9e8}
+.ai-note-form p,.ai-note-status{display:block;margin:9px 0;color:#91a0bd;font-size:10px;line-height:1.6}
+.ai-note-form .editor-actions{margin-top:12px}
+.ai-note-form button:disabled{opacity:.55;cursor:wait}
+.note-item>p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.note-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note-item-actions button{border:1px solid rgba(145,163,205,.2);border-radius:7px;padding:7px 10px;background:rgba(20,32,53,.8);color:#b9c9e4;font:10px var(--font);cursor:pointer}
+.note-item-actions button:hover{border-color:rgba(103,217,232,.5);color:#a9f0f5}
+@media(max-width:600px){.notes-header{align-items:flex-start;gap:12px;flex-direction:column}.notes-header-actions{width:100%}.notes-header-actions button{flex:1}.ai-note-form{padding:13px}}
