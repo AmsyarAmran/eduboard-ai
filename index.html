@@ -69,10 +69,20 @@
     <div class="flashcard-bottom-actions"><button type="button" class="flashcard-reset-button" id="flashcardReset">Mula semula</button><button type="button" class="flashcard-delete-button" id="flashcardDelete">Padam set kad</button></div>
   </div>
   <div class="flashcard-empty" id="flashcardEmpty"><span>✧</span><strong>Belum ada kad imbas</strong><p>Masukkan topik dan jana set kad pertama anda.</p></div>
+</section><section class="quiz-panel" aria-labelledby="quizHeading">
+  <div class="quiz-heading"><div><div class="eyebrow">AI QUIZ STUDIO</div><h2 id="quizHeading">Penjana <span class="gradient-text">Kuiz AI</span></h2><p>Uji kefahaman anda dengan soalan pilihan jawapan yang dijana AI.</p></div><span class="quiz-count" id="quizCount">Belum ada kuiz</span></div>
+  <form class="quiz-generator" id="quizForm"><label for="quizTopic">Topik pembelajaran</label><div class="quiz-generate-row"><input id="quizTopic" maxlength="120" placeholder="Contoh: Sejarah Kesultanan Melayu Melaka" required><button class="primary-button" id="generateQuiz" type="submit">✦ Jana kuiz</button></div><div class="quiz-options"><label for="quizAmount">Bilangan soalan</label><select id="quizAmount"><option value="5">5 soalan</option><option value="8" selected>8 soalan</option><option value="10">10 soalan</option><option value="15">15 soalan</option></select><span>4 pilihan jawapan · BM / English</span></div><p class="quiz-status" id="quizStatus" aria-live="polite"></p></form>
+  <div class="quiz-stage" id="quizStage" hidden>
+    <div class="quiz-stage-top"><span id="quizPosition">Soalan 1 / 8</span><span id="quizLiveScore">0 betul</span></div>
+    <div class="quiz-progress-track"><span id="quizProgressBar"></span></div>
+    <article class="quiz-question-card"><span class="quiz-question-label">SOALAN</span><h3 id="quizQuestion"></h3><div class="quiz-options-list" id="quizChoices"></div><div class="quiz-feedback" id="quizFeedback" aria-live="polite" hidden></div><div class="quiz-stage-actions"><button type="button" class="clear-button" id="quizCheck" disabled>Semak jawapan</button><button type="button" class="primary-button" id="quizNext" hidden>Soalan seterusnya →</button></div></article>
+  </div>
+  <div class="quiz-results" id="quizResults" hidden><div class="quiz-result-orb">✦</div><span class="eyebrow">SESI SELESAI</span><h3 id="quizResultTitle">Keputusan kuiz</h3><strong class="quiz-score" id="quizScore">0 / 8</strong><p id="quizResultSummary"></p><div class="quiz-result-stats"><div><strong id="quizCorrect">0</strong><span>Betul</span></div><div><strong id="quizIncorrect">0</strong><span>Perlu ulang kaji</span></div><div><strong id="quizPercentage">0%</strong><span>Markah</span></div></div><div class="quiz-review-list" id="quizReviewList"></div><div class="quiz-result-actions"><button type="button" class="clear-button" id="quizRestart">Cuba lagi</button><button type="button" class="quiz-delete-button" id="quizDelete">Padam set kuiz</button></div></div>
+  <div class="quiz-empty" id="quizEmpty"><span>✧</span><strong>Belum ada kuiz</strong><p>Masukkan topik dan jana kuiz pertama anda.</p></div>
 </section></section>
       <footer class="footer"><span>© 2026 EduBoard AI</span><span>Built for curious minds <b>✦</b></span></footer>
     </main>
   </div>
-  <script src="script.js?v=20261121-15"></script>
+  <script src="script.js?v=20261121-16"></script>
 </body>
 </html>
