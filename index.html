@@ -85,10 +85,22 @@
   <div class="analytics-grid"><article class="analytics-card"><div class="analytics-card-heading"><h3>Prestasi mingguan</h3><span>7 hari terkini</span></div><div class="analytics-chart" id="analyticsWeekly"></div></article><article class="analytics-card"><div class="analytics-card-heading"><h3>Prestasi bulanan</h3><span>6 bulan terkini</span></div><div class="analytics-chart analytics-monthly" id="analyticsMonthly"></div></article></div>
   <div class="analytics-bottom-grid"><article class="analytics-card"><div class="analytics-card-heading"><h3>Prestasi mengikut topik</h3><span>Purata markah</span></div><div id="analyticsSubjects" class="analytics-subjects"></div></article><article class="analytics-card"><div class="analytics-card-heading"><h3>Fokus ulang kaji</h3><span>Cadangan automatik</span></div><div id="analyticsRecommendations" class="analytics-recommendations"></div></article></div>
   <p class="analytics-footnote">Analitik dikira daripada nota, jadual dan percubaan kuiz yang disimpan pada peranti ini. Rekod kuiz bermula selepas ciri analitik diaktifkan.</p>
+</section>
+<section class="learning-path-panel" aria-labelledby="learningPathHeading">
+  <div class="learning-path-heading"><div><div class="eyebrow">AI PERSONAL LEARNING PATH</div><h2 id="learningPathHeading">Laluan Pembelajaran <span class="gradient-text">Peribadi</span></h2><p>Bina perjalanan belajar yang disesuaikan dengan tahap dan matlamat anda.</p></div><span class="learning-path-badge">✦ AI PATH</span></div>
+  <form class="learning-path-form" id="learningPathForm">
+    <div class="learning-path-fields"><div><label for="learningPathTopic">Subjek / topik utama</label><input id="learningPathTopic" maxlength="120" placeholder="Contoh: Matematik — Algebra" required></div><div><label for="learningPathLevel">Tahap semasa</label><select id="learningPathLevel"><option value="Beginner">Pemula / Beginner</option><option value="Intermediate" selected>Pertengahan / Intermediate</option><option value="Advanced">Lanjutan / Advanced</option></select></div></div>
+    <label for="learningPathGoal">Matlamat pembelajaran</label><textarea id="learningPathGoal" rows="2" maxlength="300" placeholder="Contoh: Fahami konsep dan bersedia untuk peperiksaan."></textarea>
+    <div class="learning-path-form-bottom"><span>AI akan menyusun 5–8 langkah pembelajaran.</span><button type="submit" class="primary-button" id="generateLearningPath">✦ Bina laluan saya</button></div>
+    <p class="learning-path-status" id="learningPathStatus" aria-live="polite"></p>
+  </form>
+  <div class="learning-path-overview" id="learningPathOverview" hidden><div><strong id="learningPathTitle">Laluan pembelajaran</strong><span id="learningPathProgressText">0 / 0 selesai</span></div><div class="learning-path-progress"><span id="learningPathProgressBar"></span></div></div>
+  <div class="learning-path-list" id="learningPathList"><div class="learning-path-empty"><span>⌁</span><strong>Perjalanan anda bermula di sini</strong><p>Masukkan topik dan tahap semasa untuk menjana laluan pembelajaran peribadi.</p></div></div>
+  <div class="learning-path-actions" id="learningPathActions" hidden><button type="button" class="learning-path-reset" id="resetLearningPath">Bina laluan baharu</button><span>Progress disimpan pada peranti ini.</span></div>
 </section></section>
       <footer class="footer"><span>© 2026 EduBoard AI</span><span>Built for curious minds <b>✦</b></span></footer>
     </main>
   </div>
-  <script src="script.js?v=20261121-17"></script>
+  <script src="script.js?v=20261121-18"></script>
 </body>
 </html>
