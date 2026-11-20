@@ -45,3 +45,21 @@
 /* Voice controls and whiteboard history */
 .voice-controls{display:flex;align-items:center;gap:7px}.voice-input-button.listening{border-color:#65d6a5;background:rgba(101,214,165,.16);color:#9af0c7;box-shadow:0 0 0 3px rgba(101,214,165,.08);animation:voicePulse 1.2s ease-in-out infinite}.voice-input-button:disabled{opacity:.45;cursor:not-allowed}#voiceButton.speaking{border-color:rgba(103,217,232,.6);color:var(--cyan)}@keyframes voicePulse{50%{box-shadow:0 0 0 7px rgba(101,214,165,0)}}.tool:disabled{opacity:.35;cursor:not-allowed}.voice-controls .icon-button{min-width:32px;min-height:32px;padding:5px}
 @media(max-width:600px){.composer-actions{gap:8px}.composer-hint{max-width:135px;line-height:1.4}.voice-controls{gap:5px}.voice-controls .icon-button{min-width:30px;padding:4px}}
+
+/* Fasa 4 — interactive AI visual learning */
+.visual-zoomable{overflow:hidden}
+.visual-zoom-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 0 8px}
+.visual-zoom-controls button{width:29px;height:27px;border:1px solid rgba(145,163,205,.24);border-radius:7px;background:rgba(22,35,58,.9);color:#dce7fb;font:600 15px var(--font);cursor:pointer}
+.visual-zoom-controls button:hover{border-color:rgba(103,217,232,.65);color:#9ceaf0}
+.visual-zoom-controls span{min-width:43px;text-align:center;color:#91a2c1;font-size:9px;font-variant-numeric:tabular-nums}
+.visual-viewport{width:100%;overflow:hidden;border-radius:9px;touch-action:pan-y}
+.visual-viewport svg{display:block;max-width:100%;margin:auto}
+.visual-viewport svg path{stroke-dasharray:1400;stroke-dashoffset:1400;animation:graphTrace 1.25s ease forwards}
+@keyframes graphTrace{to{stroke-dashoffset:0}}
+.visual-flow span{animation:flowReveal .45s ease both}
+.visual-flow span:nth-of-type(2){animation-delay:.12s}
+.visual-flow span:nth-of-type(3){animation-delay:.24s}
+.visual-flow span:nth-of-type(4){animation-delay:.36s}
+.visual-flow span:nth-of-type(5){animation-delay:.48s}
+@keyframes flowReveal{from{opacity:.2;transform:translateY(7px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.visual-viewport svg path,.visual-flow span{animation:none}.visual-zoom-controls button{transition:none}}
