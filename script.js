@@ -255,3 +255,64 @@ let activeHomeMode="topik";
 document.querySelectorAll("[data-home-mode]").forEach(button=>button.addEventListener("click",()=>{activeHomeMode=button.dataset.homeMode;document.querySelectorAll("[data-home-mode]").forEach(item=>item.classList.toggle("active",item===button));}));
 document.querySelectorAll("[data-home-prompt]").forEach(button=>button.addEventListener("click",()=>{const field=document.getElementById("homePrompt");field.value=button.dataset.homePrompt;field.focus();}));
 document.getElementById("homePromptForm").addEventListener("submit",event=>{event.preventDefault();const field=document.getElementById("homePrompt");const prompt=field.value.trim();if(!prompt){field.focus();return;}const modeNames={topik:"Mod Topik",ujian:"Mod Ujian",kerja:"Mod Kerja Rumah"};lessonMode=activeHomeMode;const modeInstructions={topik:"Bimbing saya memahami topik ini dengan penerangan yang jelas dan contoh visual jika sesuai.",ujian:"Bantu saya membuat persediaan ujian untuk perkara ini. Terangkan konsep penting, kesilapan lazim dan berikan soalan latihan ringkas.",kerja:"Bimbing saya menyelesaikan tugasan ini secara berperingkat. Berikan petunjuk dan penerangan dahulu, bukan terus memberikan jawapan akhir."};showView("tutor");chatInput.value=modeNames[activeHomeMode]+": "+prompt+"\n\n"+modeInstructions[activeHomeMode];document.getElementById("chatForm").dispatchEvent(new Event("submit",{bubbles:true,cancelable:true}));});
+
+
+/* Fasa 9 — AI Flashcard Generator */
+const flashcardForm=document.getElementById("flashcardForm");
+const flashcardTopic=document.getElementById("flashcardTopic");
+const flashcardAmount=document.getElementById("flashcardAmount");
+const flashcardStatus=document.getElementById("flashcardStatus");
+const flashcardReview=document.getElementById("flashcardReview");
+const flashcardEmpty=document.getElementById("flashcardEmpty");
+const flashcardCard=document.getElementById("flashcardCard");
+let flashcards=[],flashcardTopicName="",flashcardIndex=0,flashcardFlipped=false;
+try{const saved=JSON.parse(localStorage.getItem("eduboard-flashcards")||"null");if(saved&&Array.isArray(saved.cards)){flashcards=saved.cards.filter(card=>card&&typeof card.question==="string"&&typeof card.answer==="string").map(card=>({question:card.question,answer:card.answer,mastered:!!card.mastered}));flashcardTopicName=String(saved.topic||"");}}catch(error){flashcards=[];}
+function saveFlashcards(){localStorage.setItem("eduboard-flashcards",JSON.stringify({topic:flashcardTopicName,cards:flashcards}));}
+function renderFlashcard(){
+ const count=flashcards.length,mastered=flashcards.filter(card=>card.mastered).length;
+ document.getElementById("flashcardCount").textContent=count+" kad";
+ document.getElementById("flashcardMasteredCount").textContent=mastered+" dikuasai";
+ flashcardReview.hidden=!count;flashcardEmpty.hidden=!!count;
+ if(!count)return;
+ flashcardIndex=Math.max(0,Math.min(flashcardIndex,count-1));
+ const current=flashcards[flashcardIndex];
+ document.getElementById("flashcardPosition").textContent="Kad "+(flashcardIndex+1)+" / "+count;
+ document.getElementById("flashcardQuestion").textContent=current.question;
+ document.getElementById("flashcardAnswer").textContent=current.answer;
+ document.getElementById("flashcardMaster").setAttribute("aria-pressed",String(current.mastered));
+ document.getElementById("flashcardMaster").textContent=current.mastered?"✓ Telah dikuasai":"✓ Saya kuasai";
+ document.getElementById("flashcardPrevious").disabled=flashcardIndex===0;
+ document.getElementById("flashcardNext").disabled=flashcardIndex===count-1;
+ document.getElementById("flashcardProgressBar").style.width=((mastered/count)*100)+"%";
+ flashcardCard.classList.toggle("is-flipped",flashcardFlipped);
+ flashcardCard.setAttribute("aria-pressed",String(flashcardFlipped));
+}
+function moveFlashcard(step){flashcardIndex=Math.max(0,Math.min(flashcards.length-1,flashcardIndex+step));flashcardFlipped=false;renderFlashcard();}
+flashcardCard.addEventListener("click",()=>{flashcardFlipped=!flashcardFlipped;flashcardCard.classList.toggle("is-flipped",flashcardFlipped);flashcardCard.setAttribute("aria-pressed",String(flashcardFlipped));});
+document.getElementById("flashcardPrevious").addEventListener("click",()=>moveFlashcard(-1));
+document.getElementById("flashcardNext").addEventListener("click",()=>moveFlashcard(1));
+document.getElementById("flashcardMaster").addEventListener("click",()=>{if(!flashcards.length)return;flashcards[flashcardIndex].mastered=!flashcards[flashcardIndex].mastered;saveFlashcards();renderFlashcard();});
+document.getElementById("flashcardReset").addEventListener("click",()=>{flashcards.forEach(card=>card.mastered=false);flashcardIndex=0;flashcardFlipped=false;saveFlashcards();renderFlashcard();});
+document.getElementById("flashcardDelete").addEventListener("click",()=>{if(!confirm("Padam semua kad dalam set ini?"))return;flashcards=[];flashcardTopicName="";flashcardIndex=0;flashcardFlipped=false;saveFlashcards();renderFlashcard();flashcardStatus.textContent="Set kad telah dipadam.";});
+function parseFlashcardResponse(raw){
+ let text=String(raw||"").trim().replace(/^\x60{3}(?:json)?\s*/i,"").replace(/\s*\x60{3}$/,"");
+ const start=text.indexOf("[");const end=text.lastIndexOf("]");
+ if(start<0||end<start)throw new Error("Format kad daripada AI tidak dapat dibaca. Cuba jana sekali lagi.");
+ const parsed=JSON.parse(text.slice(start,end+1));
+ if(!Array.isArray(parsed))throw new Error("AI tidak memulangkan senarai kad yang sah.");
+ const cards=parsed.map(item=>({question:String(item.question||item.front||"").trim(),answer:String(item.answer||item.back||"").trim(),mastered:false})).filter(card=>card.question&&card.answer);
+ if(cards.length<2)throw new Error("AI menghasilkan terlalu sedikit kad. Cuba topik yang lebih khusus.");
+ return cards.slice(0,15);
+}
+flashcardForm.addEventListener("submit",async event=>{
+ event.preventDefault();const topic=flashcardTopic.value.trim();if(!topic){flashcardTopic.focus();return;}
+ const button=document.getElementById("generateFlashcards");button.disabled=true;flashcardStatus.textContent="AI sedang menyediakan kad imbas…";
+ try{
+  const prompt="Create "+flashcardAmount.value+" accurate study flashcards about: "+topic+". Respond ONLY with a valid JSON array, no Markdown fences or extra text. Every array item must have exactly two string fields: question and answer. Use the same language as the user's topic/instruction. Questions should test key concepts; answers should be concise but clear. Suitable for a school student.";
+  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");
+  const generated=parseFlashcardResponse(data.answer);flashcards=generated;flashcardTopicName=topic;flashcardIndex=0;flashcardFlipped=false;saveFlashcards();renderFlashcard();flashcardStatus.textContent=generated.length+" kad berjaya dijana untuk “"+topic+"”.";
+ }catch(error){flashcardStatus.textContent=error.message||"Tidak dapat menjana kad. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+renderFlashcard();
