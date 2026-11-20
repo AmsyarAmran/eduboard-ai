@@ -513,3 +513,57 @@ document.getElementById("runAdaptiveAnalysis").addEventListener("click",async()=
  finally{button.disabled=false;}
 });
 if(adaptiveRecommendation)renderAdaptiveRecommendation();
+
+
+/* Fasa 14 — AI Knowledge Graph */
+const knowledgeGraphForm=document.getElementById("knowledgeGraphForm");
+const knowledgeGraphStatus=document.getElementById("knowledgeGraphStatus");
+const knowledgeGraphGrid=document.getElementById("knowledgeGraphGrid");
+const knowledgeGraphDetail=document.getElementById("knowledgeGraphDetail");
+let knowledgeGraphData=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-knowledge-graph")||"null");return value&&Array.isArray(value.nodes)&&Array.isArray(value.edges)?value:null;}catch(error){return null;}})();
+function saveKnowledgeGraph(){try{localStorage.setItem("eduboard-knowledge-graph",JSON.stringify(knowledgeGraphData));}catch(error){knowledgeGraphStatus.textContent="Tidak dapat menyimpan peta pada peranti ini.";}}
+function parseKnowledgeGraph(answer,topic){
+ let source=String(answer||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
+ const first=source.indexOf("{"),last=source.lastIndexOf("}");if(first<0||last<=first)throw new Error("AI tidak memulangkan format peta yang sah. Cuba sekali lagi.");
+ let parsed;try{parsed=JSON.parse(source.slice(first,last+1));}catch(error){throw new Error("Format peta AI tidak dapat dibaca. Cuba jana semula.");}
+ if(!Array.isArray(parsed.nodes)||!Array.isArray(parsed.edges))throw new Error("Peta AI tidak mempunyai senarai konsep dan hubungan yang lengkap.");
+ const nodes=parsed.nodes.slice(0,12).map((node,index)=>({id:String(node.id||"concept-"+(index+1)).slice(0,40),title:String(node.title||"Konsep "+(index+1)).slice(0,100),type:["core","sub","skill"].includes(node.type)?node.type:"sub",description:String(node.description||"").slice(0,500)}));
+ const ids=new Set(nodes.map(node=>node.id));if(ids.size!==nodes.length)throw new Error("Peta mengandungi ID konsep yang berulang. Cuba jana semula.");
+ const edges=parsed.edges.filter(edge=>edge&&ids.has(String(edge.from))&&ids.has(String(edge.to))&&String(edge.from)!==String(edge.to)).slice(0,20).map(edge=>({from:String(edge.from),to:String(edge.to),relation:String(edge.relation||"berkaitan dengan").slice(0,100)}));
+ if(nodes.length<3||edges.length<2)throw new Error("Peta terlalu ringkas. Cuba jana semula dengan topik yang lebih khusus.");
+ return {topic:String(parsed.topic||topic).slice(0,120),nodes,edges,createdAt:new Date().toISOString()};
+}
+function showKnowledgeGraphNode(nodeId){
+ if(!knowledgeGraphData)return;
+ const node=knowledgeGraphData.nodes.find(item=>item.id===nodeId);if(!node)return;
+ const related=knowledgeGraphData.edges.filter(edge=>edge.from===nodeId||edge.to===nodeId);
+ document.getElementById("knowledgeGraphNodeType").textContent=node.type==="core"?"KONSEP UTAMA":node.type==="skill"?"KEMAHIRAN":"SUBTOPIK";
+ document.getElementById("knowledgeGraphNodeTitle").textContent=node.title;
+ document.getElementById("knowledgeGraphNodeDescription").textContent=node.description||"Tiada penerangan tambahan.";
+ const relations=document.getElementById("knowledgeGraphRelations");relations.replaceChildren();
+ if(!related.length){const empty=document.createElement("p");empty.textContent="Belum ada hubungan lain untuk konsep ini.";relations.appendChild(empty);}
+ related.forEach(edge=>{const otherId=edge.from===nodeId?edge.to:edge.from;const other=knowledgeGraphData.nodes.find(item=>item.id===otherId);if(!other)return;const item=document.createElement("div");item.className="knowledge-graph-relation";const direction=document.createElement("span");direction.textContent=edge.from===nodeId?"MENGHUBUNG KE":"DIHUBUNG DARIPADA";const name=document.createElement("strong");name.textContent=other.title;const relation=document.createElement("small");relation.textContent=edge.relation;item.append(direction,name,relation);relations.appendChild(item);});
+ knowledgeGraphDetail.hidden=false;
+ knowledgeGraphGrid.querySelectorAll("[data-kg-node]").forEach(button=>{const active=button.dataset.kgNode===nodeId;button.classList.toggle("is-selected",active);button.setAttribute("aria-pressed",String(active));});
+}
+function renderKnowledgeGraph(){
+ if(!knowledgeGraphData){document.getElementById("knowledgeGraphOverview").hidden=true;document.getElementById("knowledgeGraphActions").hidden=true;knowledgeGraphDetail.hidden=true;knowledgeGraphGrid.replaceChildren();const empty=document.createElement("div");empty.className="knowledge-graph-empty";const icon=document.createElement("span");icon.textContent="⌘";const title=document.createElement("strong");title.textContent="Peta anda belum dijana";const copy=document.createElement("p");copy.textContent="Masukkan topik untuk melihat konsep penting dan bagaimana semuanya saling berkaitan.";empty.append(icon,title,copy);knowledgeGraphGrid.appendChild(empty);return;}
+ document.getElementById("knowledgeGraphOverview").hidden=false;document.getElementById("knowledgeGraphActions").hidden=false;
+ document.getElementById("knowledgeGraphTitle").textContent=knowledgeGraphData.topic;
+ document.getElementById("knowledgeGraphCounts").textContent=knowledgeGraphData.nodes.length+" konsep · "+knowledgeGraphData.edges.length+" hubungan";
+ knowledgeGraphGrid.replaceChildren();
+ knowledgeGraphData.nodes.forEach((node,index)=>{const card=document.createElement("button");card.type="button";card.className="knowledge-graph-node kg-"+node.type;card.dataset.kgNode=node.id;card.setAttribute("aria-pressed","false");const number=document.createElement("span");number.className="knowledge-graph-node-number";number.textContent=String(index+1).padStart(2,"0");const type=document.createElement("small");type.textContent=node.type==="core"?"KONSEP UTAMA":node.type==="skill"?"KEMAHIRAN":"SUBTOPIK";const title=document.createElement("strong");title.textContent=node.title;const count=document.createElement("em");count.textContent=knowledgeGraphData.edges.filter(edge=>edge.from===node.id||edge.to===node.id).length+" hubungan";card.append(number,type,title,count);knowledgeGraphGrid.appendChild(card);});
+ const first=knowledgeGraphData.nodes[0];if(first)showKnowledgeGraphNode(first.id);
+}
+knowledgeGraphForm.addEventListener("submit",async event=>{
+ event.preventDefault();const topic=document.getElementById("knowledgeGraphTopic").value.trim(),goal=document.getElementById("knowledgeGraphGoal").value.trim(),button=document.getElementById("generateKnowledgeGraph");if(!topic)return;
+ button.disabled=true;knowledgeGraphStatus.textContent="AI sedang memetakan konsep dan hubungan…";
+ const schema=JSON.stringify({topic:"topic name",nodes:[{id:"unique-id",title:"concept name",type:"core | sub | skill",description:"short clear explanation"}],edges:[{from:"existing node id",to:"existing node id",relation:"how these concepts connect"}]});
+ const prompt="Create a clear educational knowledge graph. Return ONLY valid JSON matching this schema: "+schema+". Include 6 to 12 distinct nodes and 6 to 20 meaningful directed relationships. Use unique short IDs. Include one or two core concepts, supporting subtopics, and relevant skills. Every edge must refer to existing node IDs; do not create self-links. Explanations must be clear, accurate, concise and age-appropriate. Use the same language as the topic or focus; default to Bahasa Melayu. Topic: "+topic+". Learning focus: "+(goal||"Explain the key concepts and how they relate.");
+ try{const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");knowledgeGraphData=parseKnowledgeGraph(data.answer,topic);saveKnowledgeGraph();renderKnowledgeGraph();knowledgeGraphStatus.textContent="Peta pengetahuan berjaya dijana. Pilih mana-mana konsep untuk melihat butiran dan hubungannya.";}
+ catch(error){knowledgeGraphStatus.textContent=error.message||"Tidak dapat menjana peta. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+knowledgeGraphGrid.addEventListener("click",event=>{const button=event.target.closest("[data-kg-node]");if(button)showKnowledgeGraphNode(button.dataset.kgNode);});
+document.getElementById("resetKnowledgeGraph").addEventListener("click",()=>{knowledgeGraphData=null;try{localStorage.removeItem("eduboard-knowledge-graph");}catch(error){}knowledgeGraphStatus.textContent="Peta dipadam. Anda boleh jana peta baharu.";renderKnowledgeGraph();});
+if(knowledgeGraphData)renderKnowledgeGraph();
