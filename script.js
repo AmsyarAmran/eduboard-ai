@@ -707,7 +707,14 @@ document.getElementById("presentationBack").addEventListener("click",()=>{
  presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
 });
 document.getElementById("presentationFullscreenBack").addEventListener("click",()=>{
- if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();
+ const returnToForm=()=>{
+  presentationWorkspace.hidden=true;
+  presentationForm.hidden=false;
+  presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
+ };
+ if(document.fullscreenElement&&document.exitFullscreen){
+  document.exitFullscreen().then(returnToForm).catch(returnToForm);
+ }else{returnToForm();}
 });
 document.getElementById("presentationPrevious").addEventListener("click",()=>movePresentation(-1));
 document.getElementById("presentationNext").addEventListener("click",()=>movePresentation(1));
