@@ -6,6 +6,16 @@ document.getElementById("languageToggle").addEventListener("click",e=>{const b=e
 const chatMessages=document.getElementById("chatMessages"),chatInput=document.getElementById("chatInput");
 const TUTOR_API="https://eduboard-ai-tutor.amsyar291008.workers.dev/chat";
 const conversation=[];
+const stpmSubjectSelect=document.getElementById("stpmSubjectSelect");
+const stpmSubjectLabels={auto:"Auto kenal pasti subjek",pa:"Pengajian Am",bm:"Bahasa Melayu",kmk:"Kesusasteraan Melayu Komunikatif"};
+try{const savedSubject=localStorage.getItem("eduboard-stpm-subject");if(stpmSubjectSelect&&Object.prototype.hasOwnProperty.call(stpmSubjectLabels,savedSubject))stpmSubjectSelect.value=savedSubject;}catch(error){}
+if(stpmSubjectSelect)stpmSubjectSelect.addEventListener("change",()=>{try{localStorage.setItem("eduboard-stpm-subject",stpmSubjectSelect.value);}catch(error){}});
+function getStpmSubjectContext(){
+ const value=stpmSubjectSelect?stpmSubjectSelect.value:"auto";
+ if(value==="pa")return "KONTEKS PELAJARAN STPM: Subjek yang dipilih ialah Pengajian Am (900). Utamakan kehendak tugasan, fakta yang tepat, huraian sebab-akibat, contoh relevan dan susunan jawapan yang jelas. Bagi isu semasa, bezakan fakta yang diketahui daripada maklumat yang perlu disahkan; jangan cipta statistik, tarikh, dasar atau nama agensi. Jika soalan meminta esei, bina pendahuluan ringkas, isi berfokus dengan huraian dan contoh, serta kesimpulan jika sesuai. Sesuaikan jawapan dengan arahan soalan dan semester/kertas yang dinyatakan.";
+ if(value==="bm")return "KONTEKS PELAJARAN STPM: Subjek yang dipilih ialah Bahasa Melayu (910). Tumpukan analisis bahasa dan kemahiran yang berkaitan dengan soalan, termasuk morfologi, sintaksis, semantik, wacana, tatabahasa dan penulisan apabila relevan. Gunakan istilah linguistik dengan tepat, berikan contoh Bahasa Melayu yang gramatis, dan bezakan definisi, huraian serta contoh. Untuk soalan esei, susun hujah secara matang dan koheren. Jangan menganggap semua topik berkaitan jika tidak diminta.";
+ return "KONTEKS PELAJARAN STPM: Subjek yang dipilih ialah Kesusasteraan Melayu Komunikatif (922). Bimbing apresiasi dan analisis karya berdasarkan teks yang diberikan serta kehendak soalan. Gunakan istilah sastera dengan tepat; huraikan tema, persoalan, plot, watak dan perwatakan, latar, nilai, pengajaran, gaya bahasa, teknik penulisan atau aspek lain hanya apabila relevan. Bezakan fakta teks daripada tafsiran. Jangan mereka petikan, peristiwa, watak atau halaman; minta tajuk/teks jika maklumat karya tidak mencukupi. Untuk huraian, gunakan fakta, bukti/contoh teks dan penjelasan yang mengaitkannya dengan soalan.";
+}
 function appendInlineMarkdown(parent,text){const pattern=/(\`[^\`]+\`|\*\*[^*]+\*\*|(?<!\*)\*[^*\n]+\*(?!\*)|__[^_]+__|_[^_\n]+_)/g;let last=0,match;while((match=pattern.exec(text))){if(match.index>last)parent.appendChild(document.createTextNode(text.slice(last,match.index)));const token=match[0],isCode=token.startsWith("\`"),isBold=token.startsWith("**")||token.startsWith("__"),node=document.createElement(isCode?"code":isBold?"strong":"em");node.textContent=isCode?token.slice(1,-1):isBold?token.slice(2,-2):token.slice(1,-1);parent.appendChild(node);last=pattern.lastIndex;}if(last<text.length)parent.appendChild(document.createTextNode(text.slice(last)));}
 function renderMarkdown(target,text){
  target.replaceChildren();
@@ -147,7 +157,7 @@ function updateLessonControls(done=lessonDone){
 function cleanTutorAnswer(answer){return answer.replace(/\[\[(?:FORMULA|GRAPH|DIAGRAM|POINTS):[\s\S]*?\]\]/g,"").replace(/^\s*\[\[DONE\]\]\s*$/m,"").trim();}
 async function sendTutorTurn(displayText,kind){
  if(lessonBusy)return;if(kind==="start"){lessonActive=true;lessonStep=1;lessonDone=false;lessonTitle=displayText.split("\n")[0];}else if(kind==="next"){lessonStep++;lessonDone=false;}
- const apiText=displayText+"\n\n"+tutorInstruction(kind);conversation.push({role:"user",content:apiText});
+ const apiText=getStpmSubjectContext()+"\\n\\n"+displayText+"\n\n"+tutorInstruction(kind);conversation.push({role:"user",content:apiText});
  if(displayText)addMessage(displayText,"user");setChatBusy(true);lessonBusy=true;updateLessonControls();
  const loading=addMessage("Sedang menyediakan langkah pembelajaran…","assistant");
  try{
