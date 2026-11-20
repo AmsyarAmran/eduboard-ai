@@ -45,34 +45,61 @@ function setChatBusy(busy){chatInput.disabled=busy;document.querySelector("#chat
 let lessonActive=false,lessonStep=0,lessonBusy=false,lessonMode="topik",lessonDone=false,lessonTitle="";
 function tutorInstruction(kind){
  const mode=lessonMode==="ujian"?"Beri fokus kepada konsep penting dan teknik menjawab peperiksaan.":lessonMode==="kerja"?"Gunakan kaedah bimbingan: beri petunjuk kecil dan jangan terus beri jawapan akhir.":"Ajar dengan bahasa yang mudah, mesra dan sesuai untuk pelajar.";
- const common="PENTING: Anda ialah tutor dalam Learning Studio, bukan chatbot jawapan segera. Sebelum menjawab, rancang secara dalaman urutan pengajaran untuk topik ini, tetapi JANGAN paparkan keseluruhan rancangan. Jawab HANYA SATU konsep kecil untuk giliran ini. Jangan senaraikan beberapa langkah yang belum diajar. Terangkan satu idea dengan bahasa sekolah yang mudah, sebab di sebalik idea itu, dan satu contoh ringkas jika sesuai. Akhiri dengan SATU soalan semakan kefahaman yang mudah. Berhenti selepas itu dan tunggu respons atau butang sambung. Jangan dedahkan konsep seterusnya. "+mode+" Papan putih ialah ruang utama pembelajaran: jika visual membantu, keluarkan satu arahan visual pada baris berasingan menggunakan format [[FORMULA: LaTeX]], [[GRAPH: y=2x+1]] atau [[DIAGRAM: A -> B -> C]]. Untuk graf, gunakan persamaan tepat yang berkaitan dengan penerangan. Untuk formula, gunakan notasi LaTeX yang sah. Jangan keluarkan visual yang tidak relevan. Jika pelajaran benar-benar selesai, tulis [[DONE]] pada baris terakhir.";
+ const common="PENTING: Anda ialah tutor dalam Learning Studio, bukan chatbot jawapan segera. Sebelum menjawab, rancang secara dalaman urutan pengajaran untuk topik ini, tetapi JANGAN paparkan keseluruhan rancangan. Jawab HANYA SATU konsep kecil untuk giliran ini. Jangan senaraikan beberapa langkah yang belum diajar. Terangkan satu idea dengan bahasa sekolah yang mudah, sebab di sebalik idea itu, dan satu contoh ringkas jika sesuai. Akhiri dengan SATU soalan semakan kefahaman yang mudah. Berhenti selepas itu dan tunggu respons atau butang sambung. Jangan dedahkan konsep seterusnya. "+mode+" Papan putih ialah ruang utama pembelajaran: jika visual membantu, keluarkan satu arahan visual pada baris berasingan menggunakan format [[FORMULA: LaTeX]], [[GRAPH: y=2x+1]] atau [[DIAGRAM: A -> B -> C]]. Untuk graf, gunakan persamaan tepat yang berkaitan dengan penerangan. Sokong [[GRAPH: y=2x+1]] untuk graf linear dan [[GRAPH: y=x^2-4]] untuk graf kuadratik. Gunakan [[POINTS: (0,0); (1,2); (2,4)]] untuk titik koordinat jika sesuai. Gunakan [[DIAGRAM: A -> B -> C]] untuk rajah aliran. Untuk formula, gunakan notasi LaTeX yang sah. Keluarkan hanya visual yang membantu penerangan. Jika pelajaran benar-benar selesai, tulis [[DONE]] pada baris terakhir.";
  if(kind==="start")return common+" Ini ialah LANGKAH 1. Mulakan dengan idea atau konsep paling asas sahaja.";
  if(kind==="next")return common+" Sambung dengan SATU langkah seterusnya sahaja berdasarkan perbualan terdahulu. Jangan ulang semua langkah.";
  return "Pelajar sedang mengikuti pelajaran berperingkat. Jawab soalan susulan ini sahaja dengan ringkas dan jelas. Jangan lompat ke langkah seterusnya atau menamatkan pelajaran. Akhiri dengan bertanya sama ada pelajar mahu sambung.";
 }
 function makeGraph(expression){
- const match=expression.match(/^y\s*=\s*([+-]?(?:\d*\.?\d+)?)\s*x\s*([+-]\s*\d*\.?\d+)?$/i);
- const quad=expression.match(/^y\s*=\s*([+-]?(?:\d*\.?\d+)?)\s*x\s*\^\s*2\s*([+-]\s*\d*\.?\d+)?$/i);
- if(!match&&!quad)return null;
- let a=Number((match||quad)[1]||1),b=Number(((match||quad)[2]||"0").replace(/\s/g,""));
- const w=520,h=300,p=28,xMin=-5,xMax=5,yMin=-6,yMax=6,X=x=>p+(x-xMin)/(xMax-xMin)*(w-2*p),Y=y=>h-p-(y-yMin)/(yMax-yMin)*(h-2*p);
- const ns="http://www.w3.org/2000/svg",svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("role","img");svg.setAttribute("aria-label","Graf "+expression);
- const line=(x1,y1,x2,y2,color,width)=>{const el=document.createElementNS(ns,"line");Object.entries({x1,y1,x2,y2,stroke:color,"stroke-width":width}).forEach(([k,v])=>el.setAttribute(k,v));svg.appendChild(el);};
- for(let x=-5;x<=5;x++)line(X(x),Y(yMin),X(x),Y(yMax),"#263550",1);
- for(let y=-6;y<=6;y++)line(X(xMin),Y(y),X(xMax),Y(y),"#263550",1);
- line(X(0),Y(yMin),X(0),Y(yMax),"#91a4c5",1.5);line(X(xMin),Y(0),X(xMax),Y(0),"#91a4c5",1.5);
- let d="";for(let i=0;i<=200;i++){const x=xMin+(xMax-xMin)*i/200,y=quad?a*x*x+b:a*x+b;d+=(i?"L":"M")+X(x).toFixed(2)+" "+Y(Math.max(yMin,Math.min(yMax,y))).toFixed(2)+" ";}
- const path=document.createElementNS(ns,"path");path.setAttribute("d",d);path.setAttribute("fill","none");path.setAttribute("stroke","#75dce8");path.setAttribute("stroke-width","3");path.setAttribute("stroke-linecap","round");svg.appendChild(path);return svg;
+ const source=expression.replace(/\s/g,"").toLowerCase();
+ const quadratic=source.match(/^y=([+-]?(?:\d*\.?\d+)?)x\^2([+-]\d*\.?\d+)?$/);
+ const linear=source.match(/^y=([+-]?(?:\d*\.?\d+)?)x([+-]\d*\.?\d+)?$/);
+ if(!quadratic&&!linear)return null;
+ const match=quadratic||linear,coefficient=match[1];
+ const a=coefficient===""||coefficient==="+"?1:coefficient==="-"?-1:Number(coefficient);
+ const b=Number(match[2]||0),evaluate=x=>quadratic?a*x*x+b:a*x+b;
+ const w=560,h=330,pad=38,xMin=-5,xMax=5,yMin=-8,yMax=8;
+ const X=x=>pad+(x-xMin)/(xMax-xMin)*(w-pad*2),Y=y=>h-pad-(y-yMin)/(yMax-yMin)*(h-pad*2);
+ const ns="http://www.w3.org/2000/svg",svg=document.createElementNS(ns,"svg");
+ svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("role","img");svg.setAttribute("aria-label","Graf "+expression);
+ const add=(tag,attrs,text)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));if(text!==undefined)el.textContent=text;svg.appendChild(el);return el;};
+ for(let x=xMin;x<=xMax;x++){add("line",{x1:X(x),y1:Y(yMin),x2:X(x),y2:Y(yMax),stroke:"#263550","stroke-width":1});if(x!==0)add("text",{x:X(x),y:Y(0)+16,fill:"#8292b0","font-size":10,"text-anchor":"middle"},String(x));}
+ for(let y=yMin;y<=yMax;y+=2){add("line",{x1:X(xMin),y1:Y(y),x2:X(xMax),y2:Y(y),stroke:"#263550","stroke-width":1});if(y!==0)add("text",{x:X(0)-9,y:Y(y)+3,fill:"#8292b0","font-size":10,"text-anchor":"end"},String(y));}
+ add("line",{x1:X(0),y1:Y(yMin),x2:X(0),y2:Y(yMax),stroke:"#a9bad8","stroke-width":1.7});
+ add("line",{x1:X(xMin),y1:Y(0),x2:X(xMax),y2:Y(0),stroke:"#a9bad8","stroke-width":1.7});
+ add("text",{x:X(xMax)-4,y:Y(0)-9,fill:"#dce7fb","font-size":12,"text-anchor":"end"},"x");
+ add("text",{x:X(0)+10,y:Y(yMax)+12,fill:"#dce7fb","font-size":12},"y");
+ let d="";for(let i=0;i<=300;i++){const x=xMin+(xMax-xMin)*i/300,y=evaluate(x);d+=(i?"L":"M")+X(x).toFixed(2)+" "+Y(Math.max(yMin,Math.min(yMax,y))).toFixed(2)+" ";}
+ add("path",{d,fill:"none",stroke:"#75dce8","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"});
+ return svg;
+}
+function makePoints(source){
+ const points=[...source.matchAll(/\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/g)].map(m=>({x:Number(m[1]),y:Number(m[2])})).slice(0,12);
+ if(!points.length)return null;
+ const ns="http://www.w3.org/2000/svg",w=520,h=260,pad=38;
+ const maxX=Math.max(4,...points.map(p=>Math.abs(p.x)+1)),maxY=Math.max(4,...points.map(p=>Math.abs(p.y)+1));
+ const X=x=>pad+(x+maxX)/(2*maxX)*(w-pad*2),Y=y=>h-pad-(y+maxY)/(2*maxY)*(h-pad*2);
+ const svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("role","img");svg.setAttribute("aria-label","Plot titik koordinat");
+ const add=(tag,attrs)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));svg.appendChild(el);return el;};
+ for(let i=-Math.ceil(maxX);i<=Math.ceil(maxX);i++)add("line",{x1:X(i),y1:Y(-maxY),x2:X(i),y2:Y(maxY),stroke:"#263550","stroke-width":1});
+ for(let i=-Math.ceil(maxY);i<=Math.ceil(maxY);i++)add("line",{x1:X(-maxX),y1:Y(i),x2:X(maxX),y2:Y(i),stroke:"#263550","stroke-width":1});
+ add("line",{x1:X(0),y1:Y(-maxY),x2:X(0),y2:Y(maxY),stroke:"#a9bad8","stroke-width":1.6});
+ add("line",{x1:X(-maxX),y1:Y(0),x2:X(maxX),y2:Y(0),stroke:"#a9bad8","stroke-width":1.6});
+ points.forEach(p=>{add("circle",{cx:X(p.x),cy:Y(p.y),r:5,fill:"#75dce8",stroke:"#e7fbff","stroke-width":1.5});const label=document.createElementNS(ns,"text");label.setAttribute("x",X(p.x)+8);label.setAttribute("y",Y(p.y)-8);label.setAttribute("fill","#dce7fb");label.setAttribute("font-size","11");label.textContent="("+p.x+", "+p.y+")";svg.appendChild(label);});
+ return svg;
 }
 function renderVisuals(answer){
- const canvas=document.querySelector(".lesson-canvas");canvas.querySelectorAll(".lesson-visual").forEach(el=>el.remove());
+ const canvas=document.querySelector(".lesson-canvas");if(!canvas)return;
+ canvas.querySelectorAll(".lesson-visual").forEach(el=>el.remove());
  const formula=[...answer.matchAll(/\[\[FORMULA:\s*([\s\S]*?)\s*\]\]/g)].map(m=>m[1].trim());
  const graphs=[...answer.matchAll(/\[\[GRAPH:\s*([^\]]+)\]\]/g)].map(m=>m[1].trim());
  const diagrams=[...answer.matchAll(/\[\[DIAGRAM:\s*([^\]]+)\]\]/g)].map(m=>m[1].trim());
+ const pointSets=[...answer.matchAll(/\[\[POINTS:\s*([\s\S]*?)\s*\]\]/g)].map(m=>m[1].trim());
  const addCard=(label,content)=>{const card=document.createElement("div");card.className="lesson-visual";const tag=document.createElement("span");tag.className="eyebrow";tag.textContent=label;card.appendChild(tag);if(typeof content==="string"){const body=document.createElement("div");body.className="visual-formula";body.textContent="\\("+content+"\\)";card.appendChild(body);}else card.appendChild(content);canvas.appendChild(card);};
  formula.forEach(x=>addCard("FORMULA UTAMA",x));
  graphs.forEach(x=>{const graph=makeGraph(x);if(graph){const holder=document.createElement("div");holder.className="visual-graph";holder.appendChild(graph);const caption=document.createElement("p");caption.textContent="Graf bagi "+x;holder.appendChild(caption);addCard("GRAF FUNGSI",holder);}else addCard("PERSAMAAN GRAF",x);});
- diagrams.forEach(x=>{const holder=document.createElement("div");holder.className="visual-flow";const parts=x.split(/\s*->\s*/).slice(0,6);parts.forEach((label,i)=>{const node=document.createElement("span");node.textContent=label;holder.appendChild(node);if(i<parts.length-1){const arrow=document.createElement("b");arrow.textContent="→";holder.appendChild(arrow);}});addCard("RAJAH ALIRAN",holder);});
+ pointSets.forEach(x=>{const points=makePoints(x);if(points){const holder=document.createElement("div");holder.className="visual-graph";holder.appendChild(points);const caption=document.createElement("p");caption.textContent="Titik pada satah koordinat";holder.appendChild(caption);addCard("PLOT KOORDINAT",holder);}});
+ diagrams.forEach(x=>{const holder=document.createElement("div");holder.className="visual-flow";const parts=x.split(/\s*->\s*/).slice(0,7);parts.forEach((label,i)=>{const node=document.createElement("span");node.textContent=label;holder.appendChild(node);if(i<parts.length-1){const arrow=document.createElement("b");arrow.textContent="→";holder.appendChild(arrow);}});addCard("RAJAH ALIRAN",holder);});
  if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([canvas]).catch(()=>{});
 }
 function updateLessonControls(done=lessonDone){
@@ -81,7 +108,7 @@ function updateLessonControls(done=lessonDone){
  const next=document.getElementById("nextLessonStep");if(next){next.hidden=done;next.disabled=lessonBusy;next.textContent="Langkah seterusnya →";}
  const finish=document.getElementById("lessonDoneLabel");if(finish)finish.hidden=!done;
 }
-function cleanTutorAnswer(answer){return answer.replace(/\[\[(?:FORMULA|GRAPH|DIAGRAM):[\s\S]*?\]\]/g,"").replace(/^\s*\[\[DONE\]\]\s*$/m,"").trim();}
+function cleanTutorAnswer(answer){return answer.replace(/\[\[(?:FORMULA|GRAPH|DIAGRAM|POINTS):[\s\S]*?\]\]/g,"").replace(/^\s*\[\[DONE\]\]\s*$/m,"").trim();}
 async function sendTutorTurn(displayText,kind){
  if(lessonBusy)return;if(kind==="start"){lessonActive=true;lessonStep=1;lessonDone=false;lessonTitle=displayText.split("\n")[0];}else if(kind==="next"){lessonStep++;lessonDone=false;}
  const apiText=displayText+"\n\n"+tutorInstruction(kind);conversation.push({role:"user",content:apiText});
