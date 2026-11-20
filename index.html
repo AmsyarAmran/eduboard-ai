@@ -109,10 +109,22 @@
   <div class="adaptive-next"><span>Cadangan tindakan</span><strong id="adaptiveAction"></strong></div>
  </div>
  <p class="adaptive-disclaimer">Cadangan ini ialah panduan pembelajaran berdasarkan data yang tersedia, bukan penilaian rasmi kebolehan atau tahap penguasaan anda.</p>
-</section></section>
+<section class="knowledge-graph-panel" aria-labelledby="knowledgeGraphHeading">
+ <div class="knowledge-graph-heading"><div><div class="eyebrow">AI KNOWLEDGE GRAPH</div><h2 id="knowledgeGraphHeading">Peta Pengetahuan <span class="gradient-text">AI</span></h2><p>Teroka konsep utama dan hubungan antara idea dalam sesuatu topik.</p></div><span class="knowledge-graph-icon">⌘</span></div>
+ <form class="knowledge-graph-form" id="knowledgeGraphForm">
+  <div><label for="knowledgeGraphTopic">Subjek / topik</label><input id="knowledgeGraphTopic" maxlength="120" placeholder="Contoh: Sistem suria" required></div>
+  <div><label for="knowledgeGraphGoal">Fokus pembelajaran (pilihan)</label><input id="knowledgeGraphGoal" maxlength="180" placeholder="Contoh: Hubungan antara planet dan matahari"></div>
+  <div class="knowledge-graph-form-bottom"><span>AI akan membina peta sehingga 12 konsep dan hubungannya.</span><button type="submit" id="generateKnowledgeGraph" class="primary-button">✦ Jana peta</button></div>
+  <p class="knowledge-graph-status" id="knowledgeGraphStatus" aria-live="polite"></p>
+ </form>
+ <div class="knowledge-graph-overview" id="knowledgeGraphOverview" hidden><div><strong id="knowledgeGraphTitle">Peta pengetahuan</strong><span id="knowledgeGraphCounts">0 konsep · 0 hubungan</span></div><div class="knowledge-graph-legend"><span><i class="kg-dot core"></i> Konsep utama</span><span><i class="kg-dot sub"></i> Subtopik</span><span><i class="kg-dot skill"></i> Kemahiran</span></div></div>
+ <div class="knowledge-graph-grid" id="knowledgeGraphGrid"><div class="knowledge-graph-empty"><span>⌘</span><strong>Peta anda belum dijana</strong><p>Masukkan topik untuk melihat konsep penting dan bagaimana semuanya saling berkaitan.</p></div></div>
+ <aside class="knowledge-graph-detail" id="knowledgeGraphDetail" hidden aria-live="polite"><div class="knowledge-graph-detail-top"><span>DETAIL KONSEP</span><span id="knowledgeGraphNodeType"></span></div><h3 id="knowledgeGraphNodeTitle"></h3><p id="knowledgeGraphNodeDescription"></p><div class="knowledge-graph-relations" id="knowledgeGraphRelations"></div></aside>
+ <div class="knowledge-graph-actions" id="knowledgeGraphActions" hidden><button type="button" id="resetKnowledgeGraph" class="knowledge-graph-reset">Padam peta</button><span>Peta disimpan secara setempat pada peranti ini.</span></div>
+</section></section></section>
       <footer class="footer"><span>© 2026 EduBoard AI</span><span>Built for curious minds <b>✦</b></span></footer>
     </main>
   </div>
-  <script src="script.js?v=20261121-19"></script>
+  <script src="script.js?v=20261121-20"></script>
 </body>
 </html>
