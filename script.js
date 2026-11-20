@@ -417,3 +417,63 @@ function renderAnalytics(){
 }
 document.getElementById("refreshAnalytics").addEventListener("click",renderAnalytics);
 renderAnalytics();
+
+/* Fasa 12 — AI Personal Learning Path */
+const learningPathForm=document.getElementById("learningPathForm");
+const learningPathStatus=document.getElementById("learningPathStatus");
+const learningPathList=document.getElementById("learningPathList");
+const learningPathOverview=document.getElementById("learningPathOverview");
+const learningPathActions=document.getElementById("learningPathActions");
+let learningPathData=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-learning-path")||"null");return value&&Array.isArray(value.steps)?value:null;}catch(error){return null;}})();
+function saveLearningPath(){try{localStorage.setItem("eduboard-learning-path",JSON.stringify(learningPathData));}catch(error){learningPathStatus.textContent="Tidak dapat menyimpan laluan pada peranti ini.";}}
+function parseLearningPath(answer){
+ let source=String(answer||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
+ const first=source.indexOf("{"),last=source.lastIndexOf("}");if(first<0||last<=first)throw new Error("AI tidak memulangkan format laluan yang sah. Cuba sekali lagi.");
+ let parsed;try{parsed=JSON.parse(source.slice(first,last+1));}catch(error){throw new Error("Format jawapan AI tidak dapat dibaca. Cuba jana semula.");}
+ const steps=Array.isArray(parsed.steps)?parsed.steps:[];const clean=steps.map((step,index)=>({id:"step-"+Date.now()+"-"+index,title:String(step.title||"Topik "+(index+1)).slice(0,100),description:String(step.description||"").slice(0,500),level:String(step.level||"Pertengahan").slice(0,40),minutes:Math.max(5,Math.min(240,Number(step.minutes)||30)),prerequisite:String(step.prerequisite||"").slice(0,100),done:false})).slice(0,8);
+ if(clean.length<3)throw new Error("Laluan yang dijana terlalu pendek. Cuba jana semula.");
+ return {topic:String(parsed.topic||document.getElementById("learningPathTopic").value).slice(0,120),level:String(parsed.level||document.getElementById("learningPathLevel").value),goal:String(parsed.goal||"").slice(0,300),steps:clean,createdAt:new Date().toISOString()};
+}
+function renderLearningPath(){
+ if(!learningPathData){learningPathOverview.hidden=true;learningPathActions.hidden=true;learningPathList.innerHTML='<div class="learning-path-empty"><span>⌁</span><strong>Perjalanan anda bermula di sini</strong><p>Masukkan topik dan tahap semasa untuk menjana laluan pembelajaran peribadi.</p></div>';return;}
+ const steps=learningPathData.steps,done=steps.filter(step=>step.done).length,percent=Math.round(done/steps.length*100);
+ learningPathOverview.hidden=false;learningPathActions.hidden=false;
+ document.getElementById("learningPathTitle").textContent=learningPathData.topic+" · "+learningPathData.level;
+ document.getElementById("learningPathProgressText").textContent=done+" / "+steps.length+" selesai";
+ document.getElementById("learningPathProgressBar").style.width=percent+"%";
+ learningPathList.replaceChildren();
+ steps.forEach((step,index)=>{
+  const card=document.createElement("article");card.className="learning-path-step"+(step.done?" is-done":"");
+  const marker=document.createElement("span");marker.className="learning-path-step-number";marker.textContent=step.done?"✓":String(index+1);
+  const body=document.createElement("div");body.className="learning-path-step-body";
+  const meta=document.createElement("div");meta.className="learning-path-step-meta";meta.textContent=step.level+" · "+step.minutes+" minit";
+  const title=document.createElement("h3");title.textContent=step.title;
+  const description=document.createElement("p");description.textContent=step.description;
+  body.append(meta,title,description);
+  if(step.prerequisite){const prerequisite=document.createElement("small");prerequisite.textContent="Prasyarat: "+step.prerequisite;body.appendChild(prerequisite);}
+  const action=document.createElement("button");action.type="button";action.className="learning-path-complete";action.dataset.stepId=step.id;action.setAttribute("aria-pressed",String(step.done));action.textContent=step.done?"Selesai ✓":"Tandakan selesai";
+  card.append(marker,body,action);learningPathList.appendChild(card);
+ });
+ if(done===steps.length){const finish=document.createElement("p");finish.className="learning-path-finished";finish.textContent="✦ Tahniah! Semua langkah dalam laluan ini telah diselesaikan.";learningPathList.appendChild(finish);}
+}
+learningPathForm.addEventListener("submit",async event=>{
+ event.preventDefault();const topic=document.getElementById("learningPathTopic").value.trim(),level=document.getElementById("learningPathLevel").value,goal=document.getElementById("learningPathGoal").value.trim(),button=document.getElementById("generateLearningPath");
+ if(!topic)return;button.disabled=true;learningPathStatus.textContent="AI sedang menyusun perjalanan pembelajaran anda…";
+ const prompt="Create a personalized learning roadmap. Return ONLY valid JSON with this exact shape: {\\"topic\\":string,\\"level\\":string,\\"goal\\":string,\\"steps\\":[{\\"title\\":string,\\"description\\":string,\\"level\\":string,\\"minutes\\":number,\\"prerequisite\\":string}]}. Create 5 to 8 sequential steps, starting from the learner's current level and progressing logically. Include foundational concepts, practice, and a final application/review. Keep descriptions clear and age-appropriate. Use the same language as the topic or goal; if unclear, use Bahasa Melayu. Do not claim to know the learner's actual mastery; this is a suggested path. Topic: "+topic+". Current level: "+level+". Goal: "+(goal||"Understand the topic confidently.");
+ try{
+  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");
+  learningPathData=parseLearningPath(data.answer);saveLearningPath();renderLearningPath();learningPathStatus.textContent="Laluan pembelajaran berjaya dijana.";
+ }catch(error){learningPathStatus.textContent=error.message||"Tidak dapat menjana laluan. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+learningPathList.addEventListener("click",event=>{
+ const button=event.target.closest("[data-step-id]");if(!button||!learningPathData)return;
+ const step=learningPathData.steps.find(item=>item.id===button.dataset.stepId);if(!step)return;
+ step.done=!step.done;saveLearningPath();renderLearningPath();
+});
+document.getElementById("resetLearningPath").addEventListener("click",()=>{
+ learningPathData=null;try{localStorage.removeItem("eduboard-learning-path");}catch(error){}
+ learningPathStatus.textContent="Laluan dipadam. Anda boleh bina perjalanan baharu.";renderLearningPath();
+});
+if(learningPathData)renderLearningPath();
