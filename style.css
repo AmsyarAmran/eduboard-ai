@@ -222,3 +222,12 @@
 .presentation-navigation{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:13px}.presentation-navigation>button{width:36px;height:36px;border:1px solid rgba(167,139,250,.25);border-radius:9px;background:rgba(167,139,250,.08);color:#d2c5ff;font-size:16px;cursor:pointer}.presentation-navigation>button:disabled{opacity:.35;cursor:not-allowed}.presentation-navigation>div{display:grid;width:min(160px,40%);gap:7px;text-align:center}.presentation-navigation strong{color:#cbd7eb;font-size:10px}.presentation-progress{height:4px;overflow:hidden;border-radius:9px;background:rgba(145,163,205,.16)}.presentation-progress span{display:block;width:0;height:100%;border-radius:9px;background:linear-gradient(90deg,#67d9e8,#a78bfa);transition:width .2s}.presentation-bottom{display:flex;justify-content:space-between;gap:10px;margin-top:12px}.presentation-bottom button{border:0;background:transparent;color:#c6b4ff;font:10px var(--font);cursor:pointer}.presentation-bottom span,.presentation-studio-note{color:#7889a8;font-size:9px;line-height:1.7}.presentation-studio-note{margin:13px 0 0}
 @media(max-width:600px){.presentation-studio-fields{grid-template-columns:1fr}.presentation-workspace-top{align-items:flex-start;flex-direction:column}.presentation-workspace-actions{width:100%}.presentation-workspace-actions button{flex:1}.presentation-slide{min-height:300px}.presentation-bottom{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.presentation-progress span{transition:none}}
+
+/* Back navigation for presentation preview and fullscreen */
+.presentation-back{flex:none;padding:8px 11px;border:1px solid rgba(167,139,250,.28);border-radius:8px;background:rgba(167,139,250,.08);color:#d2c5ff;font:10px var(--font);cursor:pointer}
+.presentation-workspace-top{flex-wrap:wrap}
+.presentation-stage{position:relative}
+.presentation-fullscreen-back{display:none}
+.presentation-stage:fullscreen .presentation-fullscreen-back{position:absolute;z-index:5;top:22px;left:24px;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border:1px solid rgba(255,255,255,.28);border-radius:9px;background:rgba(5,12,26,.78);color:#fff;font:12px var(--font);cursor:pointer}
+.presentation-stage:fullscreen .presentation-fullscreen-back:hover{background:rgba(103,217,232,.2)}
+@media(max-width:600px){.presentation-workspace-top{align-items:flex-start}.presentation-back{width:100%;text-align:left}.presentation-stage:fullscreen .presentation-fullscreen-back{top:12px;left:12px;padding:8px 11px}}
