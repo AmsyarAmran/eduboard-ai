@@ -128,7 +128,7 @@ function renderVisuals(answer){
    node.addEventListener("dragstart",e=>{dragged=node;node.classList.add("dragging");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",label);});
    node.addEventListener("dragend",()=>{node.classList.remove("dragging");dragged=null;});
    node.addEventListener("dragover",e=>{e.preventDefault();e.dataTransfer.dropEffect="move";});
-   node.addEventListener("drop",e=>{e.preventDefault();if(!dragged||dragged===node)return;const rect=node.getBoundingClientRect();const after=e.clientX>rect.left+rect.width/2;holder.insertBefore(dragged,after?node.nextSibling:node);});
+   node.addEventListener("drop",e=>{e.preventDefault();if(!dragged||dragged===node)return;const rect=node.getBoundingClientRect();const after=e.clientX>rect.left+rect.width/2;holder.insertBefore(dragged,after?node.nextSibling:node);const ordered=[...holder.querySelectorAll(".visual-flow-node")];holder.replaceChildren();ordered.forEach((item,index)=>{holder.appendChild(item);if(index<ordered.length-1){const arrow=document.createElement("b");arrow.className="visual-flow-arrow";arrow.textContent="→";holder.appendChild(arrow);}});});
    holder.appendChild(node);
    if(i<parts.length-1){const arrow=document.createElement("b");arrow.className="visual-flow-arrow";arrow.textContent="→";holder.appendChild(arrow);}
   });
