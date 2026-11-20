@@ -316,3 +316,67 @@ flashcardForm.addEventListener("submit",async event=>{
  finally{button.disabled=false;}
 });
 renderFlashcard();
+
+/* Fasa 10 — AI Quiz Generator */
+const quizForm=document.getElementById("quizForm"),quizTopic=document.getElementById("quizTopic"),quizAmount=document.getElementById("quizAmount"),quizStatus=document.getElementById("quizStatus");
+const quizStage=document.getElementById("quizStage"),quizResults=document.getElementById("quizResults"),quizEmpty=document.getElementById("quizEmpty");
+let quizQuestions=[],quizTopicName="",quizIndex=0,quizAnswers=[],quizChecked=false;
+try{const savedQuiz=JSON.parse(localStorage.getItem("eduboard-quiz")||"null");if(savedQuiz&&Array.isArray(savedQuiz.questions)){quizQuestions=savedQuiz.questions.filter(q=>q&&typeof q.question==="string"&&Array.isArray(q.options)&&q.options.length===4&&Number.isInteger(q.correctIndex)&&q.correctIndex>=0&&q.correctIndex<4);quizTopicName=String(savedQuiz.topic||"");}}catch(error){quizQuestions=[];}
+function saveQuiz(){localStorage.setItem("eduboard-quiz",JSON.stringify({topic:quizTopicName,questions:quizQuestions}));}
+function parseQuizResponse(raw){
+ let text=String(raw||"").trim().replace(/^\x60{3}(?:json)?\s*/i,"").replace(/\s*\x60{3}$/,"");
+ const start=text.indexOf("[");const end=text.lastIndexOf("]");
+ if(start<0||end<start)throw new Error("Format kuiz daripada AI tidak dapat dibaca. Cuba jana sekali lagi.");
+ const parsed=JSON.parse(text.slice(start,end+1));if(!Array.isArray(parsed))throw new Error("AI tidak memulangkan senarai soalan yang sah.");
+ const questions=parsed.map(item=>{
+  const options=Array.isArray(item.options)?item.options:Array.isArray(item.choices)?item.choices:[];
+  const rawCorrect=String(item.correctAnswer??item.answer??item.correct??"").trim();
+  let correctIndex=-1;
+  if(/^[A-D]$/i.test(rawCorrect))correctIndex=rawCorrect.toUpperCase().charCodeAt(0)-65;
+  else if(/^\d$/.test(rawCorrect)&&Number(rawCorrect)>=1&&Number(rawCorrect)<=4)correctIndex=Number(rawCorrect)-1;
+  else correctIndex=options.findIndex(option=>String(option).trim().toLowerCase()===rawCorrect.toLowerCase());
+  return {question:String(item.question||"").trim(),options:options.slice(0,4).map(option=>String(option).trim()),correctIndex,explanation:String(item.explanation||item.reason||"").trim()};
+ }).filter(q=>q.question&&q.options.length===4&&q.options.every(Boolean)&&q.correctIndex>=0&&q.correctIndex<4);
+ if(questions.length<2)throw new Error("AI menghasilkan terlalu sedikit soalan yang sah. Cuba topik yang lebih khusus.");
+ return questions.slice(0,15);
+}
+function renderQuizQuestion(){
+ const q=quizQuestions[quizIndex];if(!q)return;
+ document.getElementById("quizPosition").textContent="Soalan "+(quizIndex+1)+" / "+quizQuestions.length;
+ document.getElementById("quizLiveScore").textContent=quizAnswers.filter((answer,i)=>answer===quizQuestions[i].correctIndex).length+" betul";
+ document.getElementById("quizProgressBar").style.width=(quizIndex/quizQuestions.length*100)+"%";
+ document.getElementById("quizQuestion").textContent=q.question;
+ const choices=document.getElementById("quizChoices");choices.replaceChildren();
+ q.options.forEach((option,index)=>{const button=document.createElement("button");button.type="button";button.className="quiz-choice";button.textContent=String.fromCharCode(65+index)+". "+option;button.setAttribute("aria-pressed",String(quizAnswers[quizIndex]===index));button.disabled=quizChecked;if(quizChecked){if(index===q.correctIndex)button.classList.add("is-correct");else if(quizAnswers[quizIndex]===index)button.classList.add("is-wrong");}button.addEventListener("click",()=>{if(quizChecked)return;quizAnswers[quizIndex]=index;renderQuizQuestion();});choices.appendChild(button);});
+ const feedback=document.getElementById("quizFeedback");feedback.hidden=!quizChecked;
+ if(quizChecked){const correct=quizAnswers[quizIndex]===q.correctIndex;feedback.className="quiz-feedback "+(correct?"is-correct":"is-wrong");feedback.textContent=(correct?"Betul! ":"Belum tepat. Jawapan yang betul ialah "+String.fromCharCode(65+q.correctIndex)+". ")+(q.explanation||"Teruskan ke soalan seterusnya.");}
+ document.getElementById("quizCheck").hidden=quizChecked;document.getElementById("quizCheck").disabled=quizAnswers[quizIndex]===undefined;
+ const next=document.getElementById("quizNext");next.hidden=!quizChecked;next.textContent=quizIndex===quizQuestions.length-1?"Lihat keputusan →":"Soalan seterusnya →";
+}
+function startQuiz(){quizIndex=0;quizAnswers=Array(quizQuestions.length).fill(undefined);quizChecked=false;quizResults.hidden=true;quizEmpty.hidden=true;quizStage.hidden=!quizQuestions.length;if(quizQuestions.length)renderQuizQuestion();document.getElementById("quizCount").textContent=quizQuestions.length+" soalan";}
+function finishQuiz(){
+ quizStage.hidden=true;quizResults.hidden=false;const correct=quizAnswers.filter((answer,i)=>answer===quizQuestions[i].correctIndex).length,incorrect=quizQuestions.length-correct,percent=Math.round(correct/quizQuestions.length*100);
+ document.getElementById("quizScore").textContent=correct+" / "+quizQuestions.length;
+ document.getElementById("quizCorrect").textContent=correct;document.getElementById("quizIncorrect").textContent=incorrect;document.getElementById("quizPercentage").textContent=percent+"%";
+ document.getElementById("quizResultTitle").textContent=percent>=80?"Cemerlang!":percent>=50?"Teruskan usaha!":"Masa untuk ulang kaji";
+ document.getElementById("quizResultSummary").textContent="Anda menjawab "+correct+" daripada "+quizQuestions.length+" soalan dengan betul. Semak semula penerangan di bawah untuk mengukuhkan kefahaman.";
+ const list=document.getElementById("quizReviewList");list.replaceChildren();
+ quizQuestions.forEach((q,i)=>{const item=document.createElement("article");item.className="quiz-review-item";const title=document.createElement("strong");title.textContent=(i+1)+". "+q.question;const result=document.createElement("span");const isCorrect=quizAnswers[i]===q.correctIndex;result.className=isCorrect?"review-correct":"review-wrong";result.textContent=isCorrect?"Betul":"Perlu ulang kaji";const answer=document.createElement("p");answer.textContent="Jawapan: "+String.fromCharCode(65+q.correctIndex)+". "+q.options[q.correctIndex]+(q.explanation?" — "+q.explanation:"");item.append(title,result,answer);list.appendChild(item);});
+ document.getElementById("quizProgressBar").style.width="100%";
+}
+document.getElementById("quizCheck").addEventListener("click",()=>{if(quizAnswers[quizIndex]===undefined)return;quizChecked=true;renderQuizQuestion();});
+document.getElementById("quizNext").addEventListener("click",()=>{if(!quizChecked)return;if(quizIndex===quizQuestions.length-1){finishQuiz();return;}quizIndex++;quizChecked=false;renderQuizQuestion();});
+document.getElementById("quizRestart").addEventListener("click",startQuiz);
+document.getElementById("quizDelete").addEventListener("click",()=>{if(!confirm("Padam set kuiz ini?"))return;quizQuestions=[];quizTopicName="";quizAnswers=[];localStorage.removeItem("eduboard-quiz");quizStage.hidden=true;quizResults.hidden=true;quizEmpty.hidden=false;document.getElementById("quizCount").textContent="Belum ada kuiz";quizStatus.textContent="Set kuiz telah dipadam.";});
+quizForm.addEventListener("submit",async event=>{
+ event.preventDefault();const topic=quizTopic.value.trim();if(!topic){quizTopic.focus();return;}
+ const button=document.getElementById("generateQuiz");button.disabled=true;quizStatus.textContent="AI sedang menyediakan soalan…";
+ try{
+  const prompt="Create exactly "+quizAmount.value+" accurate multiple-choice study quiz questions about: "+topic+". Respond ONLY with a valid JSON array, no Markdown fences or extra text. Each item must contain: question (string), options (array of exactly four strings), correctAnswer (one letter A, B, C, or D), and explanation (short string explaining the correct answer). Ensure exactly one correct option, plausible distractors, no ambiguous questions, and use the same language as the topic or user's instruction. Suitable for a school student.";
+  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");
+  quizQuestions=parseQuizResponse(data.answer);quizTopicName=topic;saveQuiz();startQuiz();quizStatus.textContent=quizQuestions.length+" soalan berjaya dijana untuk “"+topic+"”.";
+ }catch(error){quizStatus.textContent=error.message||"Tidak dapat menjana kuiz. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+if(quizQuestions.length)startQuiz();else document.getElementById("quizCount").textContent="Belum ada kuiz";
