@@ -77,3 +77,16 @@
 .visual-flow-hint{margin:8px 0 0;color:#7185a5;font-size:9px}
 @media(max-width:600px){.visual-flow-node{font-size:10px;padding:10px 11px}.visual-flow-arrow{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.visual-flow-node{transition:none}}
+
+/* Fasa 6 — presentation mode and guided visual playback */
+.visual-playback{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.visual-play-button{border:1px solid rgba(103,217,232,.35);border-radius:8px;background:rgba(103,217,232,.1);color:#a9f0f5;padding:8px 11px;font:600 10px var(--font);cursor:pointer}
+.visual-playback select{border:1px solid rgba(145,163,205,.24);border-radius:8px;background:#17233a;color:#dce7fb;padding:7px 9px;font:10px var(--font)}
+.presentation-mode-button{padding:0 9px;width:auto;white-space:nowrap;font-size:9px}
+.lesson-canvas.presentation-mode{position:fixed;inset:12px;z-index:9999;min-height:0;height:calc(100dvh - 24px);overflow-y:auto;border:1px solid rgba(103,217,232,.4);border-radius:16px;box-shadow:0 0 0 100vmax rgba(3,8,18,.92),0 20px 90px rgba(0,0,0,.5);padding:clamp(20px,5vw,56px);background-color:#0c1426}
+.lesson-canvas.presentation-mode .lesson-stage-card{max-width:1000px;margin:auto}
+.lesson-canvas.presentation-mode .lesson-visual{max-width:1000px;margin-left:auto;margin-right:auto}
+.lesson-canvas.presentation-mode .lesson-result-head{max-width:1000px;width:100%;margin:0 auto}
+.lesson-canvas.presentation-mode .lesson-canvas-foot{width:100%;max-width:1000px;margin:20px auto 0}
+@media(max-width:600px){.lesson-canvas.presentation-mode{inset:6px;height:calc(100dvh - 12px);padding:18px}.presentation-mode-button{font-size:8px;padding:0 6px}}
+@media(prefers-reduced-motion:reduce){.visual-play-button{transition:none}}
