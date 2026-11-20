@@ -116,7 +116,26 @@ function renderVisuals(answer){
  formula.forEach(x=>addCard("FORMULA UTAMA",x));
  graphs.forEach(x=>{const graph=makeGraph(x);if(graph){const holder=makeZoomableVisual(graph,"Graf bagi "+x);addCard("GRAF FUNGSI",holder);}else addCard("PERSAMAAN GRAF",x);});
  pointSets.forEach(x=>{const points=makePoints(x);if(points){const holder=makeZoomableVisual(points,"Titik pada satah koordinat");addCard("PLOT KOORDINAT",holder);}});
- diagrams.forEach(x=>{const holder=document.createElement("div");holder.className="visual-flow";const parts=x.split(/\s*->\s*/).slice(0,7);parts.forEach((label,i)=>{const node=document.createElement("span");node.textContent=label;holder.appendChild(node);if(i<parts.length-1){const arrow=document.createElement("b");arrow.textContent="→";holder.appendChild(arrow);}});addCard("RAJAH ALIRAN",holder);});
+ diagrams.forEach(x=>{
+  const holder=document.createElement("div");holder.className="visual-flow visual-flow-interactive";
+  const parts=x.split(/\s*->\s*/).map(v=>v.trim()).filter(Boolean).slice(0,7);
+  const detail=document.createElement("div");detail.className="visual-node-detail";detail.setAttribute("aria-live","polite");detail.textContent="Pilih mana-mana langkah untuk melihat penerangannya.";
+  let dragged=null;
+  const selectNode=(node,label)=>{holder.querySelectorAll(".visual-flow-node").forEach(n=>{n.classList.toggle("selected",n===node);n.setAttribute("aria-pressed",String(n===node));});detail.textContent="Langkah dipilih: "+label+". Bincangkan bahagian ini dengan tutor AI untuk penerangan lanjut.";};
+  parts.forEach((label,i)=>{
+   const node=document.createElement("button");node.type="button";node.className="visual-flow-node";node.textContent=label;node.draggable=true;node.setAttribute("aria-label","Pilih langkah "+(i+1)+": "+label);node.setAttribute("aria-pressed","false");
+   node.addEventListener("click",()=>selectNode(node,label));
+   node.addEventListener("dragstart",e=>{dragged=node;node.classList.add("dragging");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",label);});
+   node.addEventListener("dragend",()=>{node.classList.remove("dragging");dragged=null;});
+   node.addEventListener("dragover",e=>{e.preventDefault();e.dataTransfer.dropEffect="move";});
+   node.addEventListener("drop",e=>{e.preventDefault();if(!dragged||dragged===node)return;const rect=node.getBoundingClientRect();const after=e.clientX>rect.left+rect.width/2;holder.insertBefore(dragged,after?node.nextSibling:node);});
+   holder.appendChild(node);
+   if(i<parts.length-1){const arrow=document.createElement("b");arrow.className="visual-flow-arrow";arrow.textContent="→";holder.appendChild(arrow);}
+  });
+  const hint=document.createElement("p");hint.className="visual-flow-hint";hint.textContent="Tekan untuk pilih · Seret untuk susun semula";
+  const interactive=document.createElement("div");interactive.className="visual-flow-interaction";interactive.append(holder,detail,hint);
+  addCard("RAJAH ALIRAN INTERAKTIF",interactive);
+ });
  if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([canvas]).catch(()=>{});
 }
 function updateLessonControls(done=lessonDone){
