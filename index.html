@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d1c">
+  <title>EduBoard AI — Belajar tanpa batas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="EduBoard AI home"><span class="brand-mark">E</span><span>EduBoard<span class="brand-ai"> AI</span></span></a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="home"><span>⌂</span> Papan pemuka</button>
+        <button class="nav-item" data-view="tutor"><span>✧</span> Tutor AI</button>
+        <button class="nav-item" data-view="board"><span>▧</span> Papan putih</button>
+        <button class="nav-item" data-view="scan"><span>⌕</span> Imbas soalan</button>
+        <button class="nav-item" data-view="study"><span>▤</span> Nota & ulang kaji</button>
+      </nav>
+      <div class="sidebar-bottom"><div class="plan-card"><div class="plan-icon">✦</div><strong>Ruang belajar anda</strong><p>Semua idea bermula dengan satu soalan.</p><button class="text-button" data-view="tutor">Mula belajar <span>→</span></button></div><div class="profile-mini"><div class="avatar">A</div><div><strong>Pelajar</strong><small>EduBoard workspace</small></div><span class="online-dot"></span></div></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><button class="icon-button menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button><div class="breadcrumb">Workspace <span>/</span> <strong id="crumb">Papan pemuka</strong></div><div class="top-actions"><button class="language-toggle" id="languageToggle">MS <span>⌄</span></button><button class="help-button" aria-label="Bantuan">?</button><div class="avatar small">A</div></div></header>
+      <section class="view active" id="homeView">
+        <div class="welcome-row"><div><div class="eyebrow"><span class="sparkle">✦</span> YOUR AI LEARNING SPACE</div><h1>Belajar dengan cara<br><span class="gradient-text">yang lebih bijak.</span></h1><p class="lead">Tanya, teroka dan fahami sesuatu perkara bersama AI — semuanya dalam satu ruang.</p></div><div class="hero-orbit" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">✦</div><span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span><span class="orbit-dot dot-c"></span></div></div>
+        <div class="quick-start"><div class="section-heading"><div><span class="eyebrow">MULA DI SINI</span><h2>Apa yang ingin anda lakukan?</h2></div><span class="muted">Pilih ruang pembelajaran</span></div><div class="feature-grid">
+          <button class="feature-card tutor-card" data-view="tutor"><span class="feature-icon">✧</span><span class="card-tag">AI ASSISTANT</span><strong>Tanya Tutor AI</strong><p>Dapatkan penerangan yang mudah difahami, langkah demi langkah.</p><span class="card-arrow">↗</span></button>
+          <button class="feature-card board-card" data-view="board"><span class="feature-icon">▧</span><span class="card-tag">CREATIVE SPACE</span><strong>Papan Putih</strong><p>Catat idea, lukis rajah dan susun penyelesaian anda.</p><span class="card-arrow">↗</span></button>
+          <button class="feature-card scan-card" data-view="scan"><span class="feature-icon">⌕</span><span class="card-tag">SMART SCAN</span><strong>Imbas Soalan</strong><p>Muat naik gambar soalan untuk dibincangkan bersama tutor.</p><span class="card-arrow">↗</span></button>
+          <button class="feature-card notes-card" data-view="study"><span class="feature-icon">▤</span><span class="card-tag">STUDY SPACE</span><strong>Nota & Ulang Kaji</strong><p>Simpan nota dan bina rutin pembelajaran anda.</p><span class="card-arrow">↗</span></button>
+        </div></div>
+        <div class="bottom-grid"><div class="welcome-panel"><div><span class="eyebrow">A LITTLE REMINDER</span><h3>Setiap soalan ialah<br>permulaan ilmu.</h3><p>Belajar bukan tentang mengetahui semuanya. Ia tentang terus ingin tahu.</p></div><div class="panel-star">✳</div></div><div class="status-panel"><span class="eyebrow">YOUR WORKSPACE</span><h3>Ruang anda, cara anda.</h3><div class="status-line"><span class="status-dot"></span> Antara muka sedia digunakan</div><small>Fungsi AI sebenar akan diaktifkan selepas sambungan backend dibuat.</small></div></div>
+      </section>
+      <section class="view" id="tutorView"><div class="page-heading"><div class="eyebrow">✧ AI LEARNING COMPANION</div><h1>Tutor <span class="gradient-text">AI</span></h1><p class="lead">Tanya apa sahaja yang anda sedang pelajari.</p></div><div class="chat-layout"><div class="chat-main"><div class="chat-messages" id="chatMessages"><div class="assistant-message"><div class="bot-avatar">✦</div><div><span class="message-name">EduBoard AI <small>• Tutor</small></span><div class="message-bubble">Hai! Saya tutor pembelajaran anda. 😊<br><br>Topik apa yang ingin anda fahami hari ini? Anda boleh bertanya dalam Bahasa Melayu atau English.</div></div></div></div><form class="chat-composer" id="chatForm"><textarea id="chatInput" rows="1" placeholder="Taip soalan anda di sini..." aria-label="Soalan untuk tutor"></textarea><div class="composer-actions"><span class="composer-hint">AI demo • Sambungan model belum diaktifkan</span><div><button type="button" class="icon-button" id="voiceButton" title="Baca menggunakan suara">◖</button><button type="submit" class="send-button" aria-label="Hantar">↑</button></div></div></form></div><aside class="chat-tip"><span class="eyebrow">TIP BELAJAR</span><h3>Jadikan soalan lebih jelas.</h3><p>Beritahu tutor topik, tahap pembelajaran dan bahagian yang mengelirukan.</p><div class="suggestion-list"><button class="suggestion" data-prompt="Terangkan fotosintesis dengan bahasa yang mudah.">Terangkan fotosintesis</button><button class="suggestion" data-prompt="Bantu saya fahami persamaan linear langkah demi langkah.">Persamaan linear</button><button class="suggestion" data-prompt="Apakah perbezaan antara kata kerja transitif dan tak transitif?">Tatabahasa Melayu</button></div></aside></div></section>
+      <section class="view" id="boardView"><div class="page-heading"><div class="eyebrow">▧ CREATIVE WORKSPACE</div><h1>Papan <span class="gradient-text">Putih</span></h1><p class="lead">Ruang kosong untuk idea dan penyelesaian anda.</p></div><div class="board-toolbar"><div class="tool-group"><button class="tool active" data-tool="pen">✎ Pen</button><button class="tool" data-tool="eraser">⌫ Pemadam</button></div><label class="color-picker">Warna <input type="color" id="penColor" value="#a78bfa"></label><label class="color-picker">Saiz <input type="range" id="penSize" min="1" max="18" value="4"></label><button class="clear-button" id="clearBoard">Kosongkan</button></div><div class="canvas-wrap"><canvas id="whiteboard"></canvas></div><p class="canvas-note">Gunakan tetikus atau sentuhan untuk menulis dan melukis.</p></section>
+      <section class="view" id="scanView"><div class="page-heading"><div class="eyebrow">⌕ SMART QUESTION SCANNER</div><h1>Imbas <span class="gradient-text">Soalan</span></h1><p class="lead">Muat naik gambar soalan sebagai bahan rujukan pembelajaran.</p></div><label class="upload-zone" for="questionFile"><span class="upload-icon">↑</span><strong>Pilih gambar soalan</strong><span>Tekan untuk pilih gambar daripada peranti anda</span><small>PNG, JPG atau WEBP</small><input type="file" id="questionFile" accept="image/*" hidden></label><div class="scan-preview" id="scanPreview" hidden><img id="previewImage" alt="Pratonton gambar soalan"><div><strong>Gambar berjaya dimuat naik</strong><p>Pratonton tersedia. Analisis AI memerlukan sambungan model penglihatan.</p><button class="primary-button" id="askAboutImage">Buka Tutor AI</button></div></div></section>
+      <section class="view" id="studyView"><div class="page-heading"><div class="eyebrow">▤ PERSONAL STUDY SPACE</div><h1>Nota & <span class="gradient-text">Ulang Kaji</span></h1><p class="lead">Kumpulkan perkara penting dalam satu tempat.</p></div><div class="notes-panel"><div class="notes-header"><div><h2>Nota saya</h2><p>Simpan ringkasan pembelajaran anda pada peranti ini.</p></div><button class="primary-button" id="newNote">＋ Nota baharu</button></div><div id="notesList" class="notes-list"><div class="empty-state"><span>▤</span><strong>Belum ada nota</strong><p>Tekan “Nota baharu” untuk mula menulis.</p></div></div><div class="note-editor" id="noteEditor" hidden><input id="noteTitle" placeholder="Tajuk nota"><textarea id="noteContent" rows="7" placeholder="Tulis nota anda di sini..."></textarea><div class="editor-actions"><button class="clear-button" id="cancelNote">Batal</button><button class="primary-button" id="saveNote">Simpan nota</button></div></div></div></section>
+      <footer class="footer"><span>© 2026 EduBoard AI</span><span>Built for curious minds <b>✦</b></span></footer>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
