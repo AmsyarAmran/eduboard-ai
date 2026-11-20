@@ -88,6 +88,23 @@ function makePoints(source){
  points.forEach(p=>{add("circle",{cx:X(p.x),cy:Y(p.y),r:5,fill:"#75dce8",stroke:"#e7fbff","stroke-width":1.5});const label=document.createElementNS(ns,"text");label.setAttribute("x",X(p.x)+8);label.setAttribute("y",Y(p.y)-8);label.setAttribute("fill","#dce7fb");label.setAttribute("font-size","11");label.textContent="("+p.x+", "+p.y+")";svg.appendChild(label);});
  return svg;
 }
+function makeZoomableVisual(svg,captionText){
+ const holder=document.createElement("div");holder.className="visual-graph visual-zoomable";
+ const toolbar=document.createElement("div");toolbar.className="visual-zoom-controls";toolbar.setAttribute("role","group");toolbar.setAttribute("aria-label","Kawalan zum visual");
+ const viewport=document.createElement("div");viewport.className="visual-viewport";viewport.appendChild(svg);
+ let zoom=1;
+ const applyZoom=()=>{svg.style.transform="scale("+zoom+")";svg.style.transformOrigin="center center";svg.style.transition="transform .2s ease";};
+ const makeButton=(label,action,title)=>{const button=document.createElement("button");button.type="button";button.textContent=label;button.title=title;button.setAttribute("aria-label",title);button.addEventListener("click",action);toolbar.appendChild(button);return button;};
+ makeButton("−",()=>{zoom=Math.max(.75,+(zoom-.15).toFixed(2));applyZoom();},"Zum keluar");
+ const readout=document.createElement("span");readout.textContent="100%";toolbar.appendChild(readout);
+ const updateReadout=()=>{readout.textContent=Math.round(zoom*100)+"%";};
+ toolbar.querySelector("button").addEventListener("click",updateReadout);
+ makeButton("+",()=>{zoom=Math.min(1.9,+(zoom+.15).toFixed(2));applyZoom();updateReadout();},"Zum masuk");
+ makeButton("↺",()=>{zoom=1;applyZoom();updateReadout();},"Tetapkan semula zum");
+ holder.append(toolbar,viewport);
+ const caption=document.createElement("p");caption.textContent=captionText;holder.appendChild(caption);
+ return holder;
+}
 function renderVisuals(answer){
  const canvas=document.querySelector(".lesson-canvas");if(!canvas)return;
  canvas.querySelectorAll(".lesson-visual").forEach(el=>el.remove());
@@ -97,8 +114,8 @@ function renderVisuals(answer){
  const pointSets=[...answer.matchAll(/\[\[POINTS:\s*([\s\S]*?)\s*\]\]/g)].map(m=>m[1].trim());
  const addCard=(label,content)=>{const card=document.createElement("div");card.className="lesson-visual";const tag=document.createElement("span");tag.className="eyebrow";tag.textContent=label;card.appendChild(tag);if(typeof content==="string"){const body=document.createElement("div");body.className="visual-formula";body.textContent="\\("+content+"\\)";card.appendChild(body);}else card.appendChild(content);canvas.appendChild(card);};
  formula.forEach(x=>addCard("FORMULA UTAMA",x));
- graphs.forEach(x=>{const graph=makeGraph(x);if(graph){const holder=document.createElement("div");holder.className="visual-graph";holder.appendChild(graph);const caption=document.createElement("p");caption.textContent="Graf bagi "+x;holder.appendChild(caption);addCard("GRAF FUNGSI",holder);}else addCard("PERSAMAAN GRAF",x);});
- pointSets.forEach(x=>{const points=makePoints(x);if(points){const holder=document.createElement("div");holder.className="visual-graph";holder.appendChild(points);const caption=document.createElement("p");caption.textContent="Titik pada satah koordinat";holder.appendChild(caption);addCard("PLOT KOORDINAT",holder);}});
+ graphs.forEach(x=>{const graph=makeGraph(x);if(graph){const holder=makeZoomableVisual(graph,"Graf bagi "+x);addCard("GRAF FUNGSI",holder);}else addCard("PERSAMAAN GRAF",x);});
+ pointSets.forEach(x=>{const points=makePoints(x);if(points){const holder=makeZoomableVisual(points,"Titik pada satah koordinat");addCard("PLOT KOORDINAT",holder);}});
  diagrams.forEach(x=>{const holder=document.createElement("div");holder.className="visual-flow";const parts=x.split(/\s*->\s*/).slice(0,7);parts.forEach((label,i)=>{const node=document.createElement("span");node.textContent=label;holder.appendChild(node);if(i<parts.length-1){const arrow=document.createElement("b");arrow.textContent="→";holder.appendChild(arrow);}});addCard("RAJAH ALIRAN",holder);});
  if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([canvas]).catch(()=>{});
 }
