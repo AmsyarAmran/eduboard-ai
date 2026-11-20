@@ -665,7 +665,7 @@ function parsePresentation(answer,topic,theme){
  const first=source.indexOf("{"),last=source.lastIndexOf("}");if(first<0||last<=first)throw new Error("AI tidak memulangkan format slaid yang sah. Cuba sekali lagi.");
  let data;try{data=JSON.parse(source.slice(first,last+1));}catch(error){throw new Error("Format pembentangan AI tidak dapat dibaca.");}
  if(!Array.isArray(data.slides)||data.slides.length<3)throw new Error("Pembentangan yang dijana tidak mempunyai slaid yang mencukupi.");
- const slides=data.slides.slice(0,10).map((slide,index)=>({title:String(slide.title||"Slaid "+(index+1)).slice(0,110),body:String(slide.body||"").slice(0,500),points:Array.isArray(slide.points)?slide.points.slice(0,5).map(point=>String(point).slice(0,180)):[]}));
+ const slides=data.slides.slice(0,10).map((slide,index)=>({title:String(slide.title||"Slaid "+(index+1)).slice(0,110),body:String(slide.body||"").slice(0,500),points:Array.isArray(slide.points)?slide.points.slice(0,5).map(point=>String(point).slice(0,180)):[],narration:String(slide.narration||"").slice(0,1400)}));
  return {title:String(data.title||topic).slice(0,160),theme,slides,createdAt:new Date().toISOString()};
 }
 function renderPresentationSlide(){
@@ -679,6 +679,7 @@ function renderPresentationSlide(){
  document.getElementById("presentationSlideBody").textContent=slide.body;
  const list=document.getElementById("presentationSlidePoints");list.replaceChildren();
  slide.points.forEach(point=>{const li=document.createElement("li");li.textContent=point;list.appendChild(li);});
+ const speakButton=document.getElementById("presentationSpeakButton");if(speakButton){speakButton.textContent="🔊 Dengar penerangan AI";speakButton.disabled=false;document.getElementById("presentationSpeakStatus").textContent="Dengar penerangan bagi slaid "+(presentationIndex+1)+".";}
  document.getElementById("presentationPosition").textContent=(presentationIndex+1)+" / "+total;
  document.getElementById("presentationProgressBar").style.width=((presentationIndex+1)/total*100)+"%";
  document.getElementById("presentationPrevious").disabled=presentationIndex===0;
@@ -690,17 +691,18 @@ function showPresentationDeck(){
  presentationForm.hidden=!!presentationDeck;
  if(presentationDeck){presentationIndex=0;renderPresentationSlide();}
 }
-function movePresentation(delta){if(!presentationDeck)return;presentationIndex=Math.max(0,Math.min(presentationDeck.slides.length-1,presentationIndex+delta));renderPresentationSlide();}
+function movePresentation(delta){if(!presentationDeck)return;stopPresentationSpeech("Slaid ditukar.");presentationIndex=Math.max(0,Math.min(presentationDeck.slides.length-1,presentationIndex+delta));renderPresentationSlide();}
 presentationForm.addEventListener("submit",async event=>{
  event.preventDefault();const topic=document.getElementById("presentationTopic").value.trim(),count=Number(document.getElementById("presentationSlideCount").value),theme=document.getElementById("presentationTheme").value,button=document.getElementById("generatePresentation");
  if(!topic)return;button.disabled=true;presentationForm.hidden=false;presentationStatus.textContent="AI sedang menyusun kandungan pembentangan…";
- const schema=JSON.stringify({title:"presentation title",slides:[{title:"slide heading",body:"short explanatory paragraph",points:["key point one","key point two"]}]});
- const prompt="Create an educational presentation in "+count+" slides. Return ONLY valid JSON matching this schema: "+schema+". Use the first slide as a strong title/introduction, middle slides for logical concepts and examples, and the final slide for a concise recap. Each slide should have a short title, one concise body paragraph and 2-4 useful bullet points. Avoid repeating content. Keep facts accurate, age-appropriate and easy to present aloud. Language: use Bahasa Melayu unless the topic clearly requires English. Audience: "+document.getElementById("presentationAudience").value+". Topic: "+topic+".";
+ const schema=JSON.stringify({title:"presentation title",slides:[{title:"slide heading",body:"short explanatory paragraph",points:["key point one","key point two"],narration:"A natural spoken explanation of this slide, about 2-4 sentences, in the same language as the presentation."}]});
+ const prompt="Create an educational presentation in "+count+" slides. Return ONLY valid JSON matching this schema: "+schema+". Use the first slide as a strong title/introduction, middle slides for logical concepts and examples, and the final slide for a concise recap. Each slide should have a short title, one concise body paragraph, 2-4 useful bullet points, and a natural speaker narration of 2-4 sentences that explains the slide clearly to a student. Narration must add helpful context, not merely read the bullets. Avoid repeating content. Keep facts accurate, age-appropriate and easy to present aloud. Language: use Bahasa Melayu unless the topic clearly requires English. Audience: "+document.getElementById("presentationAudience").value+". Topic: "+topic+".";
  try{const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");presentationDeck=parsePresentation(data.answer,topic,theme);savePresentation();showPresentationDeck();presentationStatus.textContent="Pembentangan berjaya dijana. Semak kandungan sebelum dipersembahkan.";}
  catch(error){presentationStatus.textContent=error.message||"Tidak dapat menjana pembentangan. Cuba lagi.";}
  finally{button.disabled=false;}
 });
 document.getElementById("presentationBack").addEventListener("click",()=>{
+ stopPresentationSpeech("Penerangan dihentikan.");
  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();
  presentationWorkspace.hidden=true;
  presentationForm.hidden=false;
@@ -708,6 +710,7 @@ document.getElementById("presentationBack").addEventListener("click",()=>{
 });
 document.getElementById("presentationFullscreenBack").addEventListener("click",()=>{
  const returnToForm=()=>{
+  stopPresentationSpeech("Penerangan dihentikan.");
   presentationWorkspace.hidden=true;
   presentationForm.hidden=false;
   presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
@@ -716,6 +719,40 @@ document.getElementById("presentationFullscreenBack").addEventListener("click",(
   document.exitFullscreen().then(returnToForm).catch(returnToForm);
  }else{returnToForm();}
 });
+
+/* Presentation voice narration */
+let presentationIsSpeaking=false;
+function stopPresentationSpeech(message){
+ if("speechSynthesis" in window)speechSynthesis.cancel();
+ presentationIsSpeaking=false;
+ const button=document.getElementById("presentationSpeakButton");
+ if(button){button.textContent="🔊 Dengar penerangan AI";button.setAttribute("aria-pressed","false");}
+ const status=document.getElementById("presentationSpeakStatus");if(status&&message)status.textContent=message;
+}
+document.getElementById("presentationSpeakButton").addEventListener("click",()=>{
+ if(!presentationDeck)return;
+ if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){
+  document.getElementById("presentationSpeakStatus").textContent="Bacaan suara tidak disokong oleh pelayar ini.";return;
+ }
+ if(presentationIsSpeaking){stopPresentationSpeech("Penerangan dihentikan.");return;}
+ const slide=presentationDeck.slides[presentationIndex];
+ const textToRead=[slide.title,slide.narration||slide.body,(slide.points||[]).join(". ")].filter(Boolean).join(". ");
+ if(!textToRead.trim()){document.getElementById("presentationSpeakStatus").textContent="Tiada teks penerangan untuk slaid ini.";return;}
+ speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(textToRead);
+ const languageToggle=document.getElementById("languageToggle");
+ const english=languageToggle&&languageToggle.textContent.trim().startsWith("EN");
+ utterance.lang=english?"en-US":"ms-MY";
+ const voices=speechSynthesis.getVoices();
+ const preferred=voices.find(voice=>voice.lang.toLowerCase().startsWith(english?"en":"ms"))||voices.find(voice=>voice.lang.toLowerCase().startsWith(english?"en":"id"));
+ if(preferred)utterance.voice=preferred;
+ utterance.rate=0.94;utterance.pitch=1.02;
+ utterance.onstart=()=>{presentationIsSpeaking=true;const button=document.getElementById("presentationSpeakButton");button.textContent="■ Hentikan suara";button.setAttribute("aria-pressed","true");document.getElementById("presentationSpeakStatus").textContent="Sedang menerangkan slaid "+(presentationIndex+1)+"…";};
+ utterance.onend=()=>stopPresentationSpeech("Penerangan selesai.");
+ utterance.onerror=()=>stopPresentationSpeech("Suara tidak dapat dimainkan. Cuba semak tetapan suara peranti.");
+ speechSynthesis.speak(utterance);
+});
+
 document.getElementById("presentationPrevious").addEventListener("click",()=>movePresentation(-1));
 document.getElementById("presentationNext").addEventListener("click",()=>movePresentation(1));
 document.getElementById("presentationNewDeck").addEventListener("click",()=>{presentationDeck=null;try{localStorage.removeItem("eduboard-presentation");}catch(error){}showPresentationDeck();presentationStatus.textContent="Masukkan topik untuk membina pembentangan baharu.";});
