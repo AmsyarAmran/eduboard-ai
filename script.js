@@ -687,17 +687,27 @@ function renderPresentationSlide(){
 }
 function showPresentationDeck(){
  presentationWorkspace.hidden=!presentationDeck;
+ presentationForm.hidden=!!presentationDeck;
  if(presentationDeck){presentationIndex=0;renderPresentationSlide();}
 }
 function movePresentation(delta){if(!presentationDeck)return;presentationIndex=Math.max(0,Math.min(presentationDeck.slides.length-1,presentationIndex+delta));renderPresentationSlide();}
 presentationForm.addEventListener("submit",async event=>{
  event.preventDefault();const topic=document.getElementById("presentationTopic").value.trim(),count=Number(document.getElementById("presentationSlideCount").value),theme=document.getElementById("presentationTheme").value,button=document.getElementById("generatePresentation");
- if(!topic)return;button.disabled=true;presentationStatus.textContent="AI sedang menyusun kandungan pembentangan…";
+ if(!topic)return;button.disabled=true;presentationForm.hidden=false;presentationStatus.textContent="AI sedang menyusun kandungan pembentangan…";
  const schema=JSON.stringify({title:"presentation title",slides:[{title:"slide heading",body:"short explanatory paragraph",points:["key point one","key point two"]}]});
  const prompt="Create an educational presentation in "+count+" slides. Return ONLY valid JSON matching this schema: "+schema+". Use the first slide as a strong title/introduction, middle slides for logical concepts and examples, and the final slide for a concise recap. Each slide should have a short title, one concise body paragraph and 2-4 useful bullet points. Avoid repeating content. Keep facts accurate, age-appropriate and easy to present aloud. Language: use Bahasa Melayu unless the topic clearly requires English. Audience: "+document.getElementById("presentationAudience").value+". Topic: "+topic+".";
  try{const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");presentationDeck=parsePresentation(data.answer,topic,theme);savePresentation();showPresentationDeck();presentationStatus.textContent="Pembentangan berjaya dijana. Semak kandungan sebelum dipersembahkan.";}
  catch(error){presentationStatus.textContent=error.message||"Tidak dapat menjana pembentangan. Cuba lagi.";}
  finally{button.disabled=false;}
+});
+document.getElementById("presentationBack").addEventListener("click",()=>{
+ if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();
+ presentationWorkspace.hidden=true;
+ presentationForm.hidden=false;
+ presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
+});
+document.getElementById("presentationFullscreenBack").addEventListener("click",()=>{
+ if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();
 });
 document.getElementById("presentationPrevious").addEventListener("click",()=>movePresentation(-1));
 document.getElementById("presentationNext").addEventListener("click",()=>movePresentation(1));
