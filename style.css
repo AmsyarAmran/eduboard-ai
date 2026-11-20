@@ -63,3 +63,17 @@
 .visual-flow span:nth-of-type(5){animation-delay:.48s}
 @keyframes flowReveal{from{opacity:.2;transform:translateY(7px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.visual-viewport svg path,.visual-flow span{animation:none}.visual-zoom-controls button{transition:none}}
+
+/* Fasa 5 — selectable and reorderable learning diagrams */
+.visual-flow-interaction{position:relative;z-index:1;width:100%}
+.visual-flow-interactive{justify-content:flex-start;gap:8px}
+.visual-flow-node{max-width:100%;border:1px solid rgba(167,139,250,.32);border-radius:10px;background:rgba(167,139,250,.1);color:#e8e2ff;padding:12px 14px;font:600 11px/1.5 var(--font);cursor:grab;overflow-wrap:anywhere;transition:border-color .18s,background .18s,transform .18s}
+.visual-flow-node:hover{border-color:rgba(103,217,232,.7);transform:translateY(-2px)}
+.visual-flow-node.selected{border-color:#67d9e8;background:rgba(103,217,232,.17);box-shadow:0 0 0 2px rgba(103,217,232,.1)}
+.visual-flow-node:focus-visible{outline:2px solid #67d9e8;outline-offset:3px}
+.visual-flow-node.dragging{opacity:.4;cursor:grabbing}
+.visual-flow-arrow{color:#75dce8;font-size:16px}
+.visual-node-detail{margin-top:13px;padding:11px 13px;border:1px solid rgba(103,217,232,.17);border-radius:9px;background:rgba(8,20,34,.65);color:#b9c9e4;font-size:10px;line-height:1.7}
+.visual-flow-hint{margin:8px 0 0;color:#7185a5;font-size:9px}
+@media(max-width:600px){.visual-flow-node{font-size:10px;padding:10px 11px}.visual-flow-arrow{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.visual-flow-node{transition:none}}
