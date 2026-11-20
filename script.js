@@ -651,3 +651,72 @@ document.getElementById("downloadDocumentResult").addEventListener("click",()=>{
  const blob=new Blob([documentAiCurrentTitle+"\n\n"+documentAiCurrentOutput],{type:"text/plain;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");
  link.href=url;link.download="eduboard-"+documentAiCurrentTitle.toLowerCase().replace(/[^a-z0-9]+/g,"-")+".txt";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
 });
+
+
+/* Fasa 16 — AI Presentation Studio */
+const presentationForm=document.getElementById("presentationStudioForm");
+const presentationStatus=document.getElementById("presentationStudioStatus");
+const presentationWorkspace=document.getElementById("presentationWorkspace");
+let presentationDeck=(()=>{try{const data=JSON.parse(localStorage.getItem("eduboard-presentation")||"null");return data&&Array.isArray(data.slides)&&data.slides.length?data:null;}catch(error){return null;}})();
+let presentationIndex=0;
+function savePresentation(){try{localStorage.setItem("eduboard-presentation",JSON.stringify(presentationDeck));}catch(error){presentationStatus.textContent="Tidak dapat menyimpan pembentangan pada peranti ini.";}}
+function parsePresentation(answer,topic,theme){
+ let source=String(answer||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
+ const first=source.indexOf("{"),last=source.lastIndexOf("}");if(first<0||last<=first)throw new Error("AI tidak memulangkan format slaid yang sah. Cuba sekali lagi.");
+ let data;try{data=JSON.parse(source.slice(first,last+1));}catch(error){throw new Error("Format pembentangan AI tidak dapat dibaca.");}
+ if(!Array.isArray(data.slides)||data.slides.length<3)throw new Error("Pembentangan yang dijana tidak mempunyai slaid yang mencukupi.");
+ const slides=data.slides.slice(0,10).map((slide,index)=>({title:String(slide.title||"Slaid "+(index+1)).slice(0,110),body:String(slide.body||"").slice(0,500),points:Array.isArray(slide.points)?slide.points.slice(0,5).map(point=>String(point).slice(0,180)):[]}));
+ return {title:String(data.title||topic).slice(0,160),theme,slides,createdAt:new Date().toISOString()};
+}
+function renderPresentationSlide(){
+ if(!presentationDeck)return;
+ const slide=presentationDeck.slides[presentationIndex],total=presentationDeck.slides.length;
+ document.getElementById("presentationDeckTitle").textContent=presentationDeck.title;
+ document.getElementById("presentationDeckCount").textContent=total+" slaid";
+ document.getElementById("presentationSlideNumber").textContent=String(presentationIndex+1).padStart(2,"0")+" / "+String(total).padStart(2,"0");
+ document.getElementById("presentationSlideKicker").textContent=presentationIndex===0?"EDUBOARD AI · PEMBELAJARAN":"EDUBOARD AI · "+presentationDeck.title.toUpperCase();
+ document.getElementById("presentationSlideTitle").textContent=slide.title;
+ document.getElementById("presentationSlideBody").textContent=slide.body;
+ const list=document.getElementById("presentationSlidePoints");list.replaceChildren();
+ slide.points.forEach(point=>{const li=document.createElement("li");li.textContent=point;list.appendChild(li);});
+ document.getElementById("presentationPosition").textContent=(presentationIndex+1)+" / "+total;
+ document.getElementById("presentationProgressBar").style.width=((presentationIndex+1)/total*100)+"%";
+ document.getElementById("presentationPrevious").disabled=presentationIndex===0;
+ document.getElementById("presentationNext").disabled=presentationIndex===total-1;
+ document.getElementById("presentationStage").className="presentation-stage theme-"+presentationDeck.theme;
+}
+function showPresentationDeck(){
+ presentationWorkspace.hidden=!presentationDeck;
+ if(presentationDeck){presentationIndex=0;renderPresentationSlide();}
+}
+function movePresentation(delta){if(!presentationDeck)return;presentationIndex=Math.max(0,Math.min(presentationDeck.slides.length-1,presentationIndex+delta));renderPresentationSlide();}
+presentationForm.addEventListener("submit",async event=>{
+ event.preventDefault();const topic=document.getElementById("presentationTopic").value.trim(),count=Number(document.getElementById("presentationSlideCount").value),theme=document.getElementById("presentationTheme").value,button=document.getElementById("generatePresentation");
+ if(!topic)return;button.disabled=true;presentationStatus.textContent="AI sedang menyusun kandungan pembentangan…";
+ const schema=JSON.stringify({title:"presentation title",slides:[{title:"slide heading",body:"short explanatory paragraph",points:["key point one","key point two"]}]});
+ const prompt="Create an educational presentation in "+count+" slides. Return ONLY valid JSON matching this schema: "+schema+". Use the first slide as a strong title/introduction, middle slides for logical concepts and examples, and the final slide for a concise recap. Each slide should have a short title, one concise body paragraph and 2-4 useful bullet points. Avoid repeating content. Keep facts accurate, age-appropriate and easy to present aloud. Language: use Bahasa Melayu unless the topic clearly requires English. Audience: "+document.getElementById("presentationAudience").value+". Topic: "+topic+".";
+ try{const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan AI tidak berjaya.");presentationDeck=parsePresentation(data.answer,topic,theme);savePresentation();showPresentationDeck();presentationStatus.textContent="Pembentangan berjaya dijana. Semak kandungan sebelum dipersembahkan.";}
+ catch(error){presentationStatus.textContent=error.message||"Tidak dapat menjana pembentangan. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+document.getElementById("presentationPrevious").addEventListener("click",()=>movePresentation(-1));
+document.getElementById("presentationNext").addEventListener("click",()=>movePresentation(1));
+document.getElementById("presentationNewDeck").addEventListener("click",()=>{presentationDeck=null;try{localStorage.removeItem("eduboard-presentation");}catch(error){}showPresentationDeck();presentationStatus.textContent="Masukkan topik untuk membina pembentangan baharu.";});
+document.getElementById("presentationFullscreen").addEventListener("click",()=>{
+ const stage=document.getElementById("presentationStage");
+ if(!document.fullscreenElement){if(stage.requestFullscreen)stage.requestFullscreen().catch(()=>{presentationStatus.textContent="Mod skrin penuh tidak disokong oleh pelayar ini.";});}
+ else if(document.exitFullscreen)document.exitFullscreen();
+});
+document.addEventListener("keydown",event=>{
+ if(!document.fullscreenElement||!presentationDeck)return;
+ if(event.key==="ArrowRight"||event.key==="PageDown"){event.preventDefault();movePresentation(1);}
+ if(event.key==="ArrowLeft"||event.key==="PageUp"){event.preventDefault();movePresentation(-1);}
+});
+document.getElementById("presentationExport").addEventListener("click",()=>{
+ if(!presentationDeck)return;
+ const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+ const slides=presentationDeck.slides.map((slide,index)=>'<section class="slide"><small>EDUBOARD AI · '+String(index+1).padStart(2,"0")+' / '+presentationDeck.slides.length+'</small><h1>'+escapeHtml(slide.title)+'</h1><p>'+escapeHtml(slide.body)+'</p><ul>'+slide.points.map(point=>'<li>'+escapeHtml(point)+'</li>').join("")+'</ul><footer>'+escapeHtml(presentationDeck.title)+'</footer></section>').join("");
+ const popup=window.open("","_blank");if(!popup){presentationStatus.textContent="Pelayar menyekat tetingkap eksport. Benarkan pop-up untuk EduBoard AI.";return;}
+ popup.document.open();popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+escapeHtml(presentationDeck.title)+'</title><style>@page{size:landscape;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#18233c}.slide{width:100vw;height:100vh;padding:8vh 9vw;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;background:linear-gradient(135deg,#eef7ff,#f4efff)}.slide small{color:#287d91;font-size:11px;letter-spacing:2px}.slide h1{font-size:38px;margin:28px 0 12px}.slide p{font-size:19px;line-height:1.6;max-width:950px}.slide li{font-size:16px;line-height:1.7;margin:7px 0}.slide footer{margin-top:auto;padding-top:24px;color:#65728b;font-size:10px;letter-spacing:2px}@media print{.slide{page-break-after:always;break-after:page}}</style></head><body>'+slides+'</body></html>');popup.document.close();popup.focus();setTimeout(()=>popup.print(),450);
+});
+if(presentationDeck)showPresentationDeck();
