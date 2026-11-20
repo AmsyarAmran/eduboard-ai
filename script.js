@@ -1,4 +1,4 @@
-const views={home:"Papan pemuka",tutor:"Tutor AI",board:"Papan putih",scan:"Imbas soalan",study:"Nota & ulang kaji"};
+const views={home:"Papan pemuka",tutor:"Tutor AI",syllabus:"Pusat Sukatan STPM",board:"Papan putih",scan:"Imbas soalan",study:"Nota & ulang kaji"};
 function showView(name){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));const target=document.getElementById(name+"View");if(target)target.classList.add("active");document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.getElementById("crumb").textContent=views[name]||"Workspace";document.getElementById("sidebar").classList.remove("open");if(name==="board")resizeCanvas();}
 document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>showView(button.dataset.view)));
 document.getElementById("menuToggle").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
