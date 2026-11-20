@@ -477,3 +477,38 @@ document.getElementById("resetLearningPath").addEventListener("click",()=>{
  learningPathStatus.textContent="Laluan dipadam. Anda boleh bina perjalanan baharu.";renderLearningPath();
 });
 if(learningPathData)renderLearningPath();
+
+/* Fasa 13 — AI Adaptive Learning */
+const adaptiveStatus=document.getElementById("adaptiveStatus");
+const adaptiveResult=document.getElementById("adaptiveResult");
+let adaptiveRecommendation=(()=>{try{return JSON.parse(localStorage.getItem("eduboard-adaptive-recommendation")||"null");}catch(error){return null;}})();
+function renderAdaptiveRecommendation(){
+ if(!adaptiveRecommendation){adaptiveResult.hidden=true;return;}
+ adaptiveResult.hidden=false;
+ document.getElementById("adaptiveLevel").textContent=adaptiveRecommendation.level||"—";
+ document.getElementById("adaptiveFocus").textContent=adaptiveRecommendation.focus||"Fokus seterusnya";
+ document.getElementById("adaptiveReason").textContent=adaptiveRecommendation.reason||"";
+ document.getElementById("adaptiveTask").textContent=adaptiveRecommendation.task||"";
+ document.getElementById("adaptiveAction").textContent=adaptiveRecommendation.action||"";
+}
+document.getElementById("runAdaptiveAnalysis").addEventListener("click",async()=>{
+ const button=document.getElementById("runAdaptiveAnalysis");button.disabled=true;
+ adaptiveStatus.textContent="AI sedang menganalisis kemajuan pembelajaran anda…";
+ const history=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-quiz-history")||"[]");return Array.isArray(value)?value.slice(-8).map(item=>({topic:String(item.topic||"Topik"),percent:Number(item.percent)||0,date:item.date})):[];}catch(error){return[];}})();
+ const path=(()=>{try{const value=JSON.parse(localStorage.getItem("eduboard-learning-path")||"null");if(!value||!Array.isArray(value.steps))return null;return {topic:value.topic,level:value.level,steps:value.steps.map(step=>({title:step.title,completed:!!step.done}))};}catch(error){return null;}})();
+ if(!history.length&&!path){adaptiveStatus.textContent="Belum ada data. Lengkapkan sekurang-kurangnya satu kuiz atau bina laluan pembelajaran terlebih dahulu.";button.disabled=false;return;}
+ const evidence={recentQuizResults:history,learningPath:path};
+ const prompt="You are an educational adaptive-learning assistant. Analyze ONLY the supplied learning evidence and make a cautious next-step recommendation. Return ONLY valid JSON: {"+String.raw"\"level\":\"Asas | Pertengahan | Lanjutan\",\"focus\":\"next skill or topic\",\"reason\":\"brief evidence-based explanation\",\"task\":\"one concrete age-appropriate practice task\",\"action\":\"one clear next action\"}"+"}. Use the same language as the topic; default Bahasa Melayu. If quiz scores are below 50%, recommend reinforcing foundations; 50–79%, recommend guided practice; 80% or above, recommend a slightly harder extension. If there is no quiz history, use the learning path completion evidence and state uncertainty. Do not invent results or claim certainty about mastery. Evidence: "+JSON.stringify(evidence);
+ try{
+  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"user",content:prompt}]})});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||"Analisis AI tidak berjaya.");
+  let source=String(data.answer||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
+  const first=source.indexOf("{"),last=source.lastIndexOf("}");if(first<0||last<=first)throw new Error("Format cadangan AI tidak dapat dibaca.");
+  const parsed=JSON.parse(source.slice(first,last+1));
+  adaptiveRecommendation={level:String(parsed.level||"Pertengahan").slice(0,50),focus:String(parsed.focus||"Ulang kaji topik utama").slice(0,140),reason:String(parsed.reason||"").slice(0,500),task:String(parsed.task||"Buat latihan ringkas dan semak jawapan.").slice(0,500),action:String(parsed.action||"Teruskan latihan seterusnya.").slice(0,200),updatedAt:new Date().toISOString()};
+  try{localStorage.setItem("eduboard-adaptive-recommendation",JSON.stringify(adaptiveRecommendation));}catch(error){}
+  renderAdaptiveRecommendation();adaptiveStatus.textContent="Analisis selesai. Cadangan anda telah dikemas kini.";
+ }catch(error){adaptiveStatus.textContent=error.message||"Tidak dapat menganalisis prestasi. Cuba lagi.";}
+ finally{button.disabled=false;}
+});
+if(adaptiveRecommendation)renderAdaptiveRecommendation();
