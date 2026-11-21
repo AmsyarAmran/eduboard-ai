@@ -224,7 +224,7 @@
 @media(prefers-reduced-motion:reduce){.presentation-progress span{transition:none}}
 
 /* Back navigation for presentation preview and fullscreen */
-.presentation-back{flex:none;padding:8px 11px;border:1px solid rgba(167,139,250,.28);border-radius:8px;background:rgba(167,139,250,.08);color:#d2c5ff;font:10px var(--font);cursor:pointer}
+.presentation-back{display:inline-flex;align-items:center;justify-content:center;flex:none;min-height:40px;padding:10px 15px;border:1px solid rgba(167,139,250,.48);border-radius:10px;background:rgba(167,139,250,.16);color:#eee8ff;font:600 12px var(--font);cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.14)}.presentation-back:hover{background:rgba(167,139,250,.25)}
 .presentation-workspace-top{flex-wrap:wrap}
 .presentation-stage{position:relative}
 .presentation-fullscreen-back{position:absolute;z-index:5;top:12px;left:12px;display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border:1px solid rgba(255,255,255,.28);border-radius:9px;background:rgba(5,12,26,.82);color:#fff;font:11px var(--font);cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.22)}
