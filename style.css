@@ -379,3 +379,102 @@
   #homeView{margin-top:10px;padding:14px;border-radius:16px}
   #homeView .home-tools-grid{grid-template-columns:1fr}
 }
+
+
+/* Global Ahaboard-inspired light workspace refresh */
+:root{
+ --bg:#f7f6f1;--panel:#ffffff;--panel2:#fbfaf6;
+ --line:#e8e5dc;--text:#252b3a;--muted:#777d89;
+ --purple:#d8b943;--cyan:#d8b943;
+}
+body{background:#f7f6f1;color:#252b3a}
+.app-shell{background:#f7f6f1}
+.sidebar{background:#fff;border-right:1px solid #e9e6de;box-shadow:4px 0 24px rgba(36,42,57,.025)}
+.brand{color:#252b3a}
+.brand-mark{background:#f5e8ad;color:#4c401d}
+.brand-ai{color:#a17e13}
+.workspace-label,.eyebrow{color:#858995}
+.nav-item{color:#687080}
+.nav-item span{color:#a18a45}
+.nav-item:hover,.nav-item.active{background:#fff5cf;color:#292d38}
+.nav-item.active{box-shadow:inset 3px 0 #d9b944}
+.plan-card{background:#fffaf0;border-color:#eee4c2}
+.plan-icon,.text-button{color:#a17e13}
+.plan-card p,.profile-mini small{color:#777d89}
+.avatar{background:#f3e5a9;color:#4c401d}
+.main-content{color:#252b3a}
+.topbar{border-color:#e8e5dc}
+.breadcrumb{color:#858995}
+.breadcrumb strong{color:#303747}
+.language-toggle,.help-button,.icon-button{background:#fff;border-color:#e6e2d8;color:#555e6d}
+.view{color:#252b3a}
+.view .lead{color:#707887}
+.gradient-text{background:linear-gradient(100deg,#aa851a,#dfbd4a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sparkle{color:#bd982c}
+.page-heading h1,.studio-heading h1{color:#252b3a}
+.feature-card,.home-tool-card,.welcome-panel,.status-panel,
+.chat-main,.chat-tip,.notes-panel,.lesson-panel,.tutor-panel,
+.board-toolbar,.scan-preview,.syllabus-notice,.syllabus-subject-card,
+.syllabus-library-panel,.planner-panel,.flashcard-panel{
+ background:#fff;color:#252b3a;border-color:#e8e5dc;
+ box-shadow:0 5px 22px rgba(36,42,57,.035)
+}
+.feature-card{background:#fff}
+.feature-card strong,.home-tool-card b,.notes-header h2,.planner-heading h2{color:#252b3a}
+.feature-card p,.home-tool-card small,.welcome-panel p,.status-panel small{color:#777d89}
+.feature-icon,.home-tool-icon.cyan,.home-tool-icon.blue,.home-tool-icon.purple{
+ background:#fff3c8;color:#987516
+}
+.board-card,.scan-card,.notes-card{background:#fff}
+.top-actions .avatar.small{background:#f3e5a9;color:#4c401d}
+.home-footnote,.footer{border-color:#e8e5dc;color:#858995}
+.home-footnote span,.footer b{color:#a17e13}
+.chat-messages{background:#fff}
+.message-bubble{background:#f5f4ef;border-color:#e8e5dc;color:#343b49}
+.user-message .message-bubble{background:#fff2c4;color:#373324}
+.chat-composer{background:#fbfaf6;border-color:#e8dfbd}
+.chat-composer textarea,.note-editor input,.note-editor textarea,
+.note-editor input:focus,.note-editor textarea:focus,
+.planner-form input,.planner-form select,.ai-note-form input{
+ background:#fff;color:#252b3a;border-color:#e5e1d7
+}
+.chat-composer textarea::placeholder{color:#999eaa}
+.subject-select-row select,.suggestion,.tool,.clear-button{
+ background:#fff;color:#4b5362;border-color:#e6e2d8
+}
+.suggestion:hover,.tool:hover,.clear-button:hover{background:#fff6d8;border-color:#dfbf4e;color:#34302a}
+.tool.active{background:#fff2c2;border-color:#d9b944;color:#4c401d}
+.send-button,.primary-button,.home-start-button{
+ background:#252b3a;color:#fff;border-radius:9px
+}
+.send-button:hover,.primary-button:hover,.home-start-button:hover{background:#3b4354}
+.canvas-wrap{background-color:#fff;background-image:radial-gradient(#dedbd1 .8px,transparent .8px);border-color:#e8e5dc}
+#whiteboard{background:transparent}
+.lesson-canvas{background:#fff;color:#252b3a;border-color:#e8e5dc}
+.canvas-welcome h2,.lesson-result-head h2{color:#252b3a}
+.canvas-welcome p,.lesson-footer,.canvas-chips span{color:#777d89}
+.lesson-stage-card{background:#fbfaf6;border-color:#e8e5dc;color:#303747}
+.lesson-stage-content{color:#343b49}
+.chat-tip h3,.notes-header h2,.syllabus-panel-heading h2{color:#252b3a}
+.empty-state{color:#858995}
+.empty-state strong{color:#303747}
+.note-item,.planner-session,.flashcard-card{background:#fbfaf6;border-color:#e8e5dc;color:#303747}
+.upload-zone{background:#fff;border-color:#ddc66d;color:#303747}
+.upload-zone span:not(.upload-icon),.upload-zone small{color:#777d89}
+.upload-icon{background:#fff3c8;color:#987516}
+.home-prompt-card{background:#fff;border-color:#e8e5dc}
+.home-mode{background:#fff;color:#303747;border-color:#e8e5dc}
+.home-mode.active{background:#fff3c8;border-color:#dfbf4e}
+.home-prompt-form{background:#fbfaf6;border-color:#e8e5dc}
+.home-prompt-form textarea{color:#252b3a}
+.home-prompt-form textarea::placeholder{color:#999eaa}
+.home-examples button{background:#fff;color:#555e6d;border-color:#e8e5dc}
+.home-examples button:hover{background:#fff5d1;border-color:#dfbf4e;color:#34302a}
+.syllabus-code{background:#fff3c8;color:#987516}
+.planner-progress-track{background:#eeeae0}
+.planner-progress-track span{background:#d9b944}
+.lesson-step-controls{background:#fff8df;border-color:#e8dfbd;color:#51451e}
+@media(max-width:760px){
+ .sidebar{background:#fff;box-shadow:12px 0 35px rgba(30,35,48,.12)}
+ .topbar{background:#f7f6f1}
+}
