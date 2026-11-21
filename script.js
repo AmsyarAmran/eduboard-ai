@@ -801,7 +801,7 @@ document.getElementById("presentationPrevious").addEventListener("click",()=>mov
 document.getElementById("presentationNext").addEventListener("click",()=>movePresentation(1));
 document.getElementById("presentationNewDeck").addEventListener("click",()=>{stopPresentationSpeech("Penerangan dihentikan.");presentationDeck=null;try{localStorage.removeItem("eduboard-presentation");}catch(error){}showPresentationDeck();presentationStatus.textContent="Masukkan topik untuk membina pembentangan baharu.";});
 document.getElementById("presentationFullscreen").addEventListener("click",()=>{
- const stage=document.getElementById("presentationStage");
+ const stage=document.getElementById("presentationWorkspace");
  if(!document.fullscreenElement){if(stage.requestFullscreen)stage.requestFullscreen().catch(()=>{presentationStatus.textContent="Mod skrin penuh tidak disokong oleh pelayar ini.";});}
  else if(document.exitFullscreen)document.exitFullscreen();
 });
