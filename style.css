@@ -478,3 +478,18 @@ body{background:#f7f6f1;color:#252b3a}
  .sidebar{background:#fff;box-shadow:12px 0 35px rgba(30,35,48,.12)}
  .topbar{background:#f7f6f1}
 }
+
+
+/* Keep the home hero aligned with the global ivory interface */
+#homeView{background:#f7f6f1;color:#252b3a}
+#homeView .home-prompt-card{background:#fff;border-color:#e8e5dc;box-shadow:0 12px 36px rgba(34,39,54,.07)}
+#homeView .home-prompt-top strong{color:#252b3a}
+#homeView .home-prompt-top small{color:#777d89}
+#homeView .home-mode{background:#fff;color:#303747;border-color:#e8e5dc}
+#homeView .home-mode.active{background:#fff3c8;border-color:#dfbf4e}
+#homeView .home-prompt-form{background:#fbfaf6;border-color:#e8e5dc}
+#homeView .home-prompt-form textarea{color:#252b3a}
+#homeView .home-prompt-form textarea::placeholder{color:#999eaa}
+#homeView .home-start-button{background:#252b3a;color:#fff}
+#homeView .home-tools-heading h2{color:#252b3a}
+#homeView .home-tool-card{background:#fff;color:#252b3a;border-color:#e8e5dc}
