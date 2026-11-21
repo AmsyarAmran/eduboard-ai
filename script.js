@@ -165,16 +165,30 @@ function updateLessonControls(done=lessonDone){
  const finish=document.getElementById("lessonDoneLabel");if(finish)finish.hidden=!done;
 }
 function cleanTutorAnswer(answer){return answer.replace(/\[\[(?:FORMULA|GRAPH|DIAGRAM|POINTS):[\s\S]*?\]\]/g,"").replace(/^\s*\[\[DONE\]\]\s*$/m,"").trim();}
+function shouldSearchTutorWeb(text,kind){
+ if(kind!=="start"&&kind!=="question")return false;
+ const toggle=document.getElementById("webSearchToggle");
+ if(toggle&&toggle.checked)return true;
+ return /terkini|semasa|hari ini|minggu ini|bulan ini|tahun ini|terbaharu|terbaru|latest|current|today|this week|this month|this year|news|berita|sumber|rujukan|pautan|website|laman web|carian web|cari di internet|statistik terkini|dasar terkini|202[5-9]/i.test(text);
+}
 async function sendTutorTurn(displayText,kind){
  if(lessonBusy)return;if(kind==="start"){lessonActive=true;lessonStep=1;lessonDone=false;lessonTitle=displayText.split("\n")[0];}else if(kind==="next"){lessonStep++;lessonDone=false;}
+ const shouldSearchWeb=shouldSearchTutorWeb(displayText,kind);
  const apiText=getStpmSubjectContext()+getStpmReferenceContext()+"\n\n"+displayText+"\n\n"+tutorInstruction(kind);conversation.push({role:"user",content:apiText});
  if(displayText)addMessage(displayText,"user");setChatBusy(true);lessonBusy=true;updateLessonControls();
  const loading=addMessage("Sedang menyediakan langkah pembelajaran…","assistant");
  try{
-  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:conversation.slice(-10)})});
+  const response=await fetch(TUTOR_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:conversation.slice(-10),webSearch:shouldSearchWeb,searchQuery:displayText})});
   const data=await response.json();if(!response.ok)throw new Error(data.error||"Permintaan tidak berjaya.");
   if(typeof data.answer!=="string"||!data.answer.trim())throw new Error("Tutor AI tidak memulangkan jawapan.");
-  const raw=data.answer,clean=cleanTutorAnswer(raw);renderMarkdown(loading,clean);conversation.push({role:"assistant",content:raw});renderLearningCanvas(lessonTitle||displayText||"Pelajaran",clean);renderVisuals(raw);lessonDone=/\[\[DONE\]\]/.test(raw);updateLessonControls(lessonDone);
+  const raw=data.answer,clean=cleanTutorAnswer(raw);renderMarkdown(loading,clean);
+  if(shouldSearchWeb&&data.webSearch?.used&&Array.isArray(data.webSearch.sources)&&data.webSearch.sources.length){
+   const sourceBox=document.createElement("div");sourceBox.className="web-search-sources";
+   const heading=document.createElement("strong");heading.textContent="Sumber rujukan web";sourceBox.appendChild(heading);
+   data.webSearch.sources.forEach(source=>{if(!source||typeof source.url!=="string"||!/^https?:\/\//i.test(source.url))return;const link=document.createElement("a");link.href=source.url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="["+source.number+"] "+(source.title||"Buka sumber");sourceBox.appendChild(link);});
+   loading.appendChild(sourceBox);
+  }else if(shouldSearchWeb&&data.webSearch?.error){const note=document.createElement("small");note.className="web-search-note";note.textContent="Carian web tidak berjaya: "+data.webSearch.error;loading.appendChild(note);}
+conversation.push({role:"assistant",content:raw});renderLearningCanvas(lessonTitle||displayText||"Pelajaran",clean);renderVisuals(raw);lessonDone=/\[\[DONE\]\]/.test(raw);updateLessonControls(lessonDone);
  }catch(error){loading.textContent=error.message||"Sambungan Tutor AI terganggu. Cuba lagi sebentar.";conversation.pop();if(kind==="next")lessonStep=Math.max(1,lessonStep-1);if(kind==="start")lessonActive=false;updateLessonControls();}
  finally{lessonBusy=false;setChatBusy(false);updateLessonControls(lessonDone);chatInput.focus();chatMessages.scrollTop=chatMessages.scrollHeight;}
 }
