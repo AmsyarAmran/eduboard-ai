@@ -196,7 +196,7 @@ document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefau
 document.getElementById("nextLessonStep").addEventListener("click",()=>sendTutorTurn("Teruskan ke satu langkah pembelajaran yang seterusnya.","next"));
 const presentationButton=document.getElementById("presentationModeButton"),lessonCanvas=document.querySelector(".lesson-canvas");if(presentationButton&&lessonCanvas){presentationButton.addEventListener("click",()=>{const active=lessonCanvas.classList.toggle("presentation-mode");presentationButton.setAttribute("aria-pressed",String(active));presentationButton.textContent=active?"✕ Keluar":"⛶ Pembentangan";});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&lessonCanvas.classList.contains("presentation-mode")){lessonCanvas.classList.remove("presentation-mode");presentationButton.setAttribute("aria-pressed","false");presentationButton.textContent="⛶ Pembentangan";}});}
 document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{if(stpmSubjectSelect&&b.dataset.subject){stpmSubjectSelect.value=b.dataset.subject;stpmSubjectSelect.dispatchEvent(new Event("change"));}chatInput.value=b.dataset.prompt;chatInput.focus();}));
-function findSpeechVoice(language){const voices=("speechSynthesis" in window)?speechSynthesis.getVoices():[];const target=String(language||"").toLowerCase();if(target==="ms-my")return voices.find(v=>String(v.lang||"").toLowerCase().replace("_","-")==="ms-my")||null;return voices.find(v=>String(v.lang||"").toLowerCase().startsWith("en-"))||null;}
+function findSpeechVoice(language){const voices=("speechSynthesis" in window)?speechSynthesis.getVoices():[];const target=String(language||"").toLowerCase();if(target==="ms-my"){const normalized=voices.map(v=>({voice:v,lang:String(v.lang||"").toLowerCase().replace(/_/g,"-")}));return normalized.find(item=>item.lang==="ms-my")?.voice||normalized.find(item=>item.lang.startsWith("ms-"))?.voice||null;}return voices.find(v=>String(v.lang||"").toLowerCase().startsWith("en-"))||null;}
 const voiceButton=document.getElementById("voiceButton"),voiceInputButton=document.getElementById("voiceInputButton");
 voiceButton.addEventListener("click",()=>{
  if(!("speechSynthesis" in window)){alert("Fungsi bacaan suara tidak disokong oleh pelayar ini.");return;}
@@ -775,15 +775,8 @@ document.getElementById("presentationBack").addEventListener("click",()=>{
  presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
 });
 document.getElementById("presentationFullscreenBack").addEventListener("click",()=>{
- const returnToForm=()=>{
-  stopPresentationSpeech("Penerangan dihentikan.");
-  presentationWorkspace.hidden=true;
-  presentationForm.hidden=false;
-  presentationStatus.textContent="Anda kembali ke tetapan pembentangan. Hasil anda masih disimpan.";
- };
- if(document.fullscreenElement&&document.exitFullscreen){
-  document.exitFullscreen().then(returnToForm).catch(returnToForm);
- }else{returnToForm();}
+ stopPresentationSpeech("Mod skrin penuh ditutup. Pembentangan anda masih terbuka.");
+ if(document.fullscreenElement&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}
 });
 
 /* Presentation voice narration — synchronized reveal, pause and autoplay */
