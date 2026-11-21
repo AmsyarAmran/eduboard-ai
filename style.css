@@ -248,3 +248,13 @@
 .syllabus-reference-fields{display:grid;grid-template-columns:1fr 1.3fr;gap:12px}.syllabus-reference-fields label{display:block;font-size:10px;color:#aab8d0;margin-bottom:7px}.syllabus-reference-fields select,.syllabus-reference-fields input[type=file]{width:100%;min-width:0;min-height:39px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#111a2d;color:#d8e2f5;font:11px var(--font)}.syllabus-upload-hint,.syllabus-privacy{font-size:10px;line-height:1.6;color:#8190ad}.syllabus-reference-form .primary-button{margin-top:8px}.syllabus-reference-status{font-size:11px;color:#8ee5ed;min-height:16px}
 .syllabus-saved-heading{display:flex;justify-content:space-between;align-items:center;margin:23px 0 10px}.syllabus-saved-heading h3{font:600 15px var(--display);margin:0}.syllabus-saved-heading span{font-size:10px;color:var(--muted)}.syllabus-reference-list{display:grid;gap:8px}.syllabus-reference-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#111a2d}.syllabus-reference-item strong{display:block;font-size:11px;overflow-wrap:anywhere}.syllabus-reference-item small{display:block;color:var(--muted);font-size:9px;margin-top:4px}.syllabus-reference-item button{border:1px solid rgba(255,130,130,.2);background:rgba(255,130,130,.08);color:#ffaaaa;border-radius:7px;padding:7px 9px;font:10px var(--font);cursor:pointer;flex-shrink:0}
 @media(max-width:850px){.syllabus-subject-grid{grid-template-columns:1fr}.syllabus-subject-card p{min-height:0}.syllabus-reference-fields{grid-template-columns:1fr}}
+
+/* Carian web Tavily dalam Tutor AI */
+.web-search-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px;padding:10px 12px;border:1px solid rgba(103,217,232,.2);border-radius:9px;background:rgba(103,217,232,.045);color:#b9c8e2;font-size:11px;cursor:pointer}
+.web-search-toggle input{width:15px;height:15px;accent-color:#67d9e8}
+.web-search-toggle span{font-weight:700;color:#a9f0f5}
+.web-search-toggle small{flex-basis:100%;margin-left:23px;color:#8798b7;font-size:9px;line-height:1.5}
+.web-search-sources{display:grid;gap:7px;margin-top:12px;padding:11px;border:1px solid rgba(103,217,232,.18);border-radius:9px;background:rgba(103,217,232,.04)}
+.web-search-sources strong{color:#a9f0f5;font-size:10px}
+.web-search-sources a{color:#c6d9f4;font-size:10px;line-height:1.5;text-decoration:underline;overflow-wrap:anywhere}
+.web-search-note{display:block;margin-top:8px;color:#e8bf83;font-size:10px}
