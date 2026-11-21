@@ -258,3 +258,28 @@
 .web-search-sources strong{color:#a9f0f5;font-size:10px}
 .web-search-sources a{color:#c6d9f4;font-size:10px;line-height:1.5;text-decoration:underline;overflow-wrap:anywhere}
 .web-search-note{display:block;margin-top:8px;color:#e8bf83;font-size:10px}
+
+
+/* Comedy Pop presentation experience */
+.presentation-studio{background:linear-gradient(135deg,rgba(255,102,153,.09),rgba(255,207,87,.08) 42%,rgba(103,217,232,.08)),#111a2e;border-color:rgba(255,169,91,.3)}
+.presentation-studio-icon{background:linear-gradient(135deg,#ffcf57,#ff83b5);border:0;color:#4a2453;box-shadow:0 8px 22px rgba(255,131,181,.2)}
+.presentation-stage.theme-comedy{background:radial-gradient(circle at 8% 12%,rgba(255,207,87,.34),transparent 26%),radial-gradient(circle at 92% 15%,rgba(255,111,163,.32),transparent 30%),radial-gradient(circle at 82% 90%,rgba(87,220,224,.28),transparent 28%),linear-gradient(135deg,#292052,#172b4c 55%,#153c4b);border-color:rgba(255,207,87,.4)}
+.presentation-stage.theme-comedy .presentation-slide{border:1px solid rgba(255,255,255,.23);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045));box-shadow:0 22px 60px rgba(0,0,0,.2)}
+.presentation-stage.theme-comedy .presentation-slide-kicker{display:inline-flex;align-self:flex-start;padding:7px 11px;border-radius:999px;background:rgba(255,207,87,.16);color:#ffe28a;font-weight:800;letter-spacing:1.5px}
+.presentation-slide-emoji{display:grid;place-items:center;width:clamp(48px,7vw,76px);height:clamp(48px,7vw,76px);margin-top:22px;border:1px solid rgba(255,255,255,.25);border-radius:23px;background:linear-gradient(135deg,rgba(255,207,87,.28),rgba(255,111,163,.24));font-size:clamp(28px,4vw,42px);box-shadow:0 10px 28px rgba(0,0,0,.14)}
+.presentation-stage.theme-comedy .presentation-slide h3{margin:17px 0 10px;font-size:clamp(27px,4.5vw,48px);letter-spacing:-.04em}
+.presentation-stage.theme-comedy .presentation-slide>p{color:#e1eaff;font-size:clamp(13px,1.6vw,16px)}
+.presentation-stage.theme-comedy .presentation-slide li{padding:9px 13px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.075);list-style:"✦  ";margin-left:2px}
+.presentation-stage.theme-comedy .presentation-slide li::marker{color:#ffcf57}
+.presentation-audio-controls{display:grid;gap:10px;border-color:rgba(255,169,91,.22);background:linear-gradient(90deg,rgba(255,207,87,.07),rgba(255,111,163,.06),rgba(103,217,232,.06))}
+.presentation-audio-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.presentation-audio-controls .presentation-audio-buttons button{flex:1;min-width:125px;border-color:rgba(255,207,87,.25);background:rgba(255,207,87,.1);color:#ffe5a0}
+.presentation-audio-controls .presentation-audio-buttons button:first-child{background:linear-gradient(100deg,#ffcf57,#ff91b6);border:0;color:#33213e;font-weight:800}
+.presentation-audio-controls .presentation-audio-buttons button:disabled{opacity:.4}
+.presentation-hidden{opacity:0!important;transform:translateY(18px) scale(.985)!important;filter:blur(5px)!important;pointer-events:none}
+.presentation-reveal{animation:presentationPopIn .62s cubic-bezier(.2,.8,.2,1) both}
+@keyframes presentationPopIn{0%{opacity:0;transform:translateY(20px) scale(.97);filter:blur(5px)}65%{opacity:1;transform:translateY(-3px) scale(1.012);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.presentation-stage.theme-comedy .presentation-slide-emoji.presentation-reveal{animation:presentationBounceIn .72s cubic-bezier(.2,.9,.25,1.2) both}
+@keyframes presentationBounceIn{0%{opacity:0;transform:scale(.45) rotate(-14deg)}70%{opacity:1;transform:scale(1.12) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@media(max-width:600px){.presentation-audio-buttons{display:grid;grid-template-columns:1fr 1fr}.presentation-audio-controls .presentation-audio-buttons button{min-width:0}.presentation-slide-emoji{margin-top:15px}}
+@media(prefers-reduced-motion:reduce){.presentation-reveal,.presentation-stage.theme-comedy .presentation-slide-emoji.presentation-reveal{animation:none!important;opacity:1;transform:none;filter:none}.presentation-hidden{opacity:1!important;transform:none!important;filter:none!important}}
