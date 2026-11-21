@@ -303,3 +303,79 @@
 .syar-voice-settings-actions button:disabled{opacity:.45;cursor:not-allowed}
 .syar-voice-settings-content p{margin:0;color:#8798b7;font-size:10px;line-height:1.55}
 @media(max-width:600px){.syar-voice-settings-actions{display:grid;grid-template-columns:1fr 1fr}.syar-voice-settings-actions button{min-width:0}}
+
+
+/* Ahaboard-inspired dashboard palette: warm ivory, ink navy and soft yellow.
+   Original EduBoard AI branding and learning features are retained. */
+#homeView{
+  margin-top:18px;
+  padding:clamp(16px,3vw,34px);
+  border-radius:22px;
+  background:#f7f6f1;
+  color:#202638;
+  --line:#e7e4da;
+  --text:#202638;
+  --muted:#737987;
+  --purple:#e9c94f;
+  --cyan:#e9c94f;
+}
+#homeView .eyebrow{color:#777b86}
+#homeView .home-intro h1{color:#202638}
+#homeView .home-intro .lead{color:#687080}
+#homeView .gradient-text{
+  background:linear-gradient(100deg,#b68e19,#e0b936);
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+#homeView .sparkle{color:#c39c27}
+#homeView .home-prompt-card{
+  background:#fff;
+  border:1px solid #e8e4d9;
+  border-radius:18px;
+  box-shadow:0 12px 36px rgba(34,39,54,.07)
+}
+#homeView .home-prompt-card:before{
+  background:linear-gradient(90deg,transparent,#f0d56e,#d9b53b,transparent)
+}
+#homeView .prompt-orb{
+  background:#f8e9a8;color:#4b401d;box-shadow:none;border-radius:12px
+}
+#homeView .home-prompt-top strong{color:#202638}
+#homeView .home-prompt-top small{color:#737987}
+#homeView .prompt-online{color:#39886a}
+#homeView .home-mode{background:#fff;border:1px solid #e8e4d9;color:#303748}
+#homeView .home-mode span{color:#9b7c20}
+#homeView .home-mode small{color:#7c8290}
+#homeView .home-mode.active{
+  background:#fff4c8;border-color:#e5c653;
+  box-shadow:inset 0 0 0 1px rgba(220,184,63,.12)
+}
+#homeView .home-prompt-form{background:#fff;border:1px solid #e8e4d9}
+#homeView .home-prompt-form textarea{color:#202638}
+#homeView .home-prompt-form textarea::placeholder{color:#9a9eaa}
+#homeView .home-prompt-bottom>span{color:#7d8290}
+#homeView .home-start-button{
+  background:#202638;color:#fff;border-radius:9px
+}
+#homeView .home-examples>span{color:#858995}
+#homeView .home-examples button{
+  background:#fff;border:1px solid #e8e4d9;color:#4b5362
+}
+#homeView .home-examples button:hover{background:#fff5d1;border-color:#e5c653;color:#3b3420}
+#homeView .home-tools-heading h2{color:#202638}
+#homeView .home-tools-heading .muted{color:#858995}
+#homeView .home-tool-card{
+  background:#fff;border:1px solid #e8e4d9;color:#202638;
+  box-shadow:0 4px 14px rgba(34,39,54,.035)
+}
+#homeView .home-tool-card:hover{border-color:#dfbf4e;transform:translateY(-2px)}
+#homeView .home-tool-icon.cyan,
+#homeView .home-tool-icon.blue,
+#homeView .home-tool-icon.purple{background:#fff3c5;color:#8b6c16}
+#homeView .home-tool-card small{color:#747b89}
+#homeView .home-tool-arrow{color:#8d783a}
+#homeView .home-footnote{border-color:#e5e1d7;color:#7d8290}
+#homeView .home-footnote span{color:#b28b1d}
+@media(max-width:760px){
+  #homeView{margin-top:10px;padding:14px;border-radius:16px}
+  #homeView .home-tools-grid{grid-template-columns:1fr}
+}
