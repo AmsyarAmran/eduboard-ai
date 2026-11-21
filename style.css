@@ -289,3 +289,17 @@
 .presentation-workspace:fullscreen .presentation-slide{min-height:56vh}
 .presentation-workspace:fullscreen .presentation-fullscreen-back{top:12px;left:12px}
 @media(prefers-reduced-motion:reduce){.presentation-workspace:fullscreen .presentation-slide{transition:none}}
+
+
+/* Syar voice preferences */
+.syar-voice-settings{margin:0 0 12px;border:1px solid rgba(103,217,232,.22);border-radius:13px;background:rgba(13,25,43,.72);color:#dce7fb;overflow:hidden}
+.syar-voice-settings summary{padding:13px 15px;cursor:pointer;color:#a9f0f5;font-size:12px;font-weight:700;list-style:none}
+.syar-voice-settings summary::-webkit-details-marker{display:none}
+.syar-voice-settings-content{display:grid;gap:9px;padding:0 15px 14px}
+.syar-voice-settings-content label{font-size:11px;color:#aab8d0}
+.syar-voice-settings-content select{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#111a2d;color:#e3edff;font:12px var(--font)}
+.syar-voice-settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+.syar-voice-settings-actions button{padding:9px 12px;border:1px solid rgba(103,217,232,.25);border-radius:8px;background:rgba(103,217,232,.1);color:#b9f4f5;font:11px var(--font);font-weight:700;cursor:pointer}
+.syar-voice-settings-actions button:disabled{opacity:.45;cursor:not-allowed}
+.syar-voice-settings-content p{margin:0;color:#8798b7;font-size:10px;line-height:1.55}
+@media(max-width:600px){.syar-voice-settings-actions{display:grid;grid-template-columns:1fr 1fr}.syar-voice-settings-actions button{min-width:0}}
