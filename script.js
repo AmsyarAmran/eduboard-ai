@@ -822,3 +822,29 @@ document.getElementById("presentationExport").addEventListener("click",()=>{
  popup.document.open();popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+escapeHtml(presentationDeck.title)+'</title><style>@page{size:landscape;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#18233c}.slide{width:100vw;height:100vh;padding:8vh 9vw;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;background:linear-gradient(135deg,#eef7ff,#f4efff)}.slide small{color:#287d91;font-size:11px;letter-spacing:2px}.slide h1{font-size:38px;margin:28px 0 12px}.slide p{font-size:19px;line-height:1.6;max-width:950px}.slide li{font-size:16px;line-height:1.7;margin:7px 0}.slide footer{margin-top:auto;padding-top:24px;color:#65728b;font-size:10px;letter-spacing:2px}@media print{.slide{page-break-after:always;break-after:page}}</style></head><body>'+slides+'</body></html>');popup.document.close();popup.focus();setTimeout(()=>popup.print(),450);
 });
 if(presentationDeck)showPresentationDeck();
+
+
+/* Interface interactions: home navigation and quick help */
+document.querySelector(".brand")?.addEventListener("click",event=>{
+ event.preventDefault();
+ showView("home");
+});
+document.querySelector(".help-button")?.addEventListener("click",()=>{
+ const message=[
+  "PUSAT BANTUAN EDUBOARD AI",
+  "",
+  "• Mod Topik: fahami konsep dengan penerangan dan contoh.",
+  "• Mod Ujian: ulang kaji isi penting dan latihan.",
+  "• Mod Kerja Rumah: dapatkan petunjuk langkah demi langkah.",
+  "• Tutor AI: tanya soalan dan ikuti penerangan pada papan pembelajaran.",
+  "• Papan Putih: lukis, padam, undo, redo dan eksport PNG.",
+  "• Imbas Soalan: muat naik gambar untuk pratonton.",
+  "• Nota & Ulang Kaji: simpan nota dan rancang sesi belajar.",
+  "",
+  "Pilih menu di sebelah kiri untuk membuka ruang yang diperlukan."
+ ].join("\n");
+ window.alert(message);
+});
+document.querySelector(".mini-tool[title='Papan putih']")?.addEventListener("click",()=>{
+ showView("board");
+});
